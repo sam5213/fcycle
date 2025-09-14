@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luna - Your Gentle Cycle Companion</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Welcome Screen (shown on first visit) -->
+        <div id="welcome-screen" class="screen">
+            <div class="welcome-content">
+                <div class="welcome-icon">
+                    <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                        <path d="M40 10C45 15 50 20 45 30C50 35 45 45 40 50C35 45 30 35 35 30C30 20 35 15 40 10Z" fill="#E8B4CB" stroke="#D4A5C2" stroke-width="2"/>
+                        <circle cx="40" cy="55" r="8" fill="#F4E4BC" stroke="#E8D5A3" stroke-width="2"/>
+                        <path d="M32 63C32 63 36 67 40 65C44 67 48 63 48 63" stroke="#D4A5C2" stroke-width="2" fill="none"/>
+                    </svg>
+                </div>
+                <h1>Welcome to Luna</h1>
+                <p>Your gentle companion for understanding your beautiful cycle</p>
+                
+                <div class="setup-form">
+                    <div class="form-group">
+                        <label for="last-period">When did your last period start?</label>
+                        <input type="date" id="last-period" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cycle-length">Your average cycle length</label>
+                        <select id="cycle-length">
+                            <option value="21">21 days</option>
+                            <option value="22">22 days</option>
+                            <option value="23">23 days</option>
+                            <option value="24">24 days</option>
+                            <option value="25">25 days</option>
+                            <option value="26">26 days</option>
+                            <option value="27">27 days</option>
+                            <option value="28" selected>28 days</option>
+                            <option value="29">29 days</option>
+                            <option value="30">30 days</option>
+                            <option value="31">31 days</option>
+                            <option value="32">32 days</option>
+                            <option value="33">33 days</option>
+                            <option value="34">34 days</option>
+                            <option value="35">35 days</option>
+                        </select>
+                    </div>
+                    
+                    <button id="start-journey" class="primary-button">Begin Your Journey</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App -->
+        <div id="main-app" class="screen hidden">
+            <!-- Navigation -->
+            <nav class="bottom-nav">
+                <button class="nav-item active" data-tab="today">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>Today</span>
+                </button>
+                <button class="nav-item" data-tab="calendar">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+                        <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+                        <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>Calendar</span>
+                </button>
+                <button class="nav-item" data-tab="diary">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" stroke="currentColor" stroke-width="2"/>
+                        <polygon points="18,2 22,6 12,16 8,16 8,12 18,2" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>Diary</span>
+                </button>
+            </nav>
+
+            <!-- Tab Contents -->
+            <div class="tab-content">
+                <!-- Today Tab -->
+                <div id="today-tab" class="tab-pane active">
+                    <div class="today-header">
+                        <h2 id="greeting">Good morning, beautiful</h2>
+                        <div class="cycle-info">
+                            <div class="cycle-day">
+                                <span class="day-number" id="current-day">1</span>
+                                <span class="day-label">Day of cycle</span>
+                            </div>
+                            <div class="phase-indicator" id="phase-indicator">
+                                <div class="phase-circle"></div>
+                                <span class="phase-name" id="phase-name">Menstruation</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="recommendation-card" id="recommendation-card">
+                        <div class="recommendation-icon" id="recommendation-icon">
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                <circle cx="20" cy="20" r="18" fill="#F4E4BC" stroke="#E8D5A3" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <p id="recommendation-text">Let your body rest today. Drink warm ginger tea, hug your pillow, take your time.</p>
+                        <!-- Added gentle activities suggestion -->
+                        <div class="activities-hint" id="activities-hint">
+                            <span class="activities-label">Gentle suggestions:</span>
+                            <div class="activities-list" id="activities-list">
+                                <span class="activity-tag">Rest</span>
+                                <span class="activity-tag">Warm tea</span>
+                                <span class="activity-tag">Gentle yoga</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mood-section">
+                        <h3>How are you feeling today?</h3>
+                        <div class="mood-selector">
+                            <button class="mood-btn" data-mood="happy">😊</button>
+                            <button class="mood-btn" data-mood="neutral">😐</button>
+                            <button class="mood-btn" data-mood="sad">🥺</button>
+                            <button class="mood-btn" data-mood="tired">😴</button>
+                            <button class="mood-btn" data-mood="strong">💪</button>
+                            <button class="mood-btn" data-mood="blooming">🌸</button>
+                        </div>
+                        <textarea id="daily-note" placeholder="Add a gentle note to yourself..."></textarea>
+                        <button id="save-mood" class="secondary-button">Save Today's Mood</button>
+                    </div>
+                </div>
+
+                <!-- Calendar Tab -->
+                <div id="calendar-tab" class="tab-pane">
+                    <div class="calendar-header">
+                        <h2>Your Cycle Calendar</h2>
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-color menstruation"></div>
+                                <span>Menstruation</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color follicular"></div>
+                                <span>Follicular</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color ovulation"></div>
+                                <span>Ovulation</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color luteal"></div>
+                                <span>Luteal</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="calendar-grid" class="calendar-grid"></div>
+                </div>
+
+                <!-- Diary Tab -->
+                <div id="diary-tab" class="tab-pane">
+                    <div class="diary-header">
+                        <h2>Your Beautiful Journey</h2>
+                        <p>Every feeling is valid, every day is precious</p>
+                    </div>
+                    <div id="diary-entries" class="diary-entries"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day Detail Modal -->
+        <div id="day-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modal-date">Day 1</h3>
+                    <button id="close-modal" class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-phase" id="modal-phase">
+                        <div class="phase-circle"></div>
+                        <span class="phase-name">Menstruation</span>
+                    </div>
+                    <p id="modal-recommendation">Your gentle recommendation for today...</p>
+                    <div class="modal-note">
+                        <label for="modal-note-input">Your note for this day:</label>
+                        <textarea id="modal-note-input" placeholder="How did you feel? What did you learn about yourself?"></textarea>
+                        <button id="save-note" class="secondary-button">Save Note</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification -->
+        <div id="notification" class="notification hidden">
+            <div class="notification-content">
+                <div class="notification-icon">🌙</div>
+                <p id="notification-text">Your period might start in 2 days. Time to be extra gentle with yourself.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
