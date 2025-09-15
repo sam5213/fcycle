@@ -9,9 +9,6 @@ let appState = {
   dayNotes: {},
 }
 
-// Объявление Telegram WebApp
-const Telegram = window.Telegram ? window.Telegram : { WebApp: { sendData: () => {} } }
-
 // Phase definitions and recommendations
 const phases = {
   menstruation: {
@@ -242,26 +239,43 @@ function initializeEventListeners() {
 // Функция для отправки рекомендации в Telegram чат
 function sendRecommendationToTelegram(recommendationText, phaseName, cycleDay) {
   try {
-    // Форматируем данные для отправки
-    const dataToSend = JSON.stringify({
-      type: "recommendation",
-      text: recommendationText,
+    // Форматируем данные для отправки на сервер
+    const dataToSend = {
+      recommendation: recommendationText,
       phase: phaseName,
       cycleDay: cycleDay,
       timestamp: new Date().toISOString()
-    });
+    };
     
-    // Отправляем данные через Telegram WebApp API
-    if (window.Telegram && window.Telegram.WebApp) {
-      window.Telegram.WebApp.sendData(dataToSend);
-      
-      // Показываем пользователю уведомление об отправке
-      showNotification("✨ Recommendation sent to your chat!");
-    } else {
-      console.log("Telegram WebApp not available");
-    }
+    // Отправляем POST-запрос на сервер
+    fetch('https://fcycle-85.deno.dev/api/book', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(dataToSend),
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        // Показываем пользователю уведомление об отправке
+        showNotification("✨ Recommendation sent to your chat!");
+      } else {
+        console.error('Server error:', data.error);
+        showNotification("❌ Failed to send recommendation");
+      }
+    })
+    .catch(error => {
+      console.error('Error sending recommendation:', error);
+      showNotification("❌ Error sending recommendation");
+    });
   } catch (error) {
-    console.error("Error sending recommendation to Telegram:", error);
+    console.error("Error in sendRecommendationToTelegram:", error);
   }
 }
 
@@ -559,7 +573,7 @@ function generateCalendar() {
     const cycleDay = getDayOfCycle(dayDate)
     const phase = getPhaseForDay(cycleDay)
 
-    // Apply phase color
+  // Apply phase color
     dayElement.style.backgroundColor = phase.color
     dayElement.style.color = "white"
 
