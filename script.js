@@ -104,6 +104,15 @@ const moodEmojis = {
 
 // Initialize app
 document.addEventListener("DOMContentLoaded", () => {
+  // Инициализация Telegram WebApp
+  if (window.Telegram?.WebApp) {
+    window.Telegram.WebApp.ready(); // Сообщаем Telegram, что приложение готово
+    window.Telegram.WebApp.expand(); // Разворачиваем на весь экран (опционально)
+    console.log("Telegram WebApp initialized");
+  } else {
+    console.warn("Telegram WebApp not detected. Running in standalone mode?");
+  }
+
   // Add loading state
   document.body.style.opacity = "0"
   document.body.style.transition = "opacity 0.5s ease"
@@ -236,46 +245,36 @@ function initializeEventListeners() {
   }
 }
 
-// Функция для отправки рекомендации в Telegram чат
+// ✅ НОВАЯ ФУНКЦИЯ: Отправка рекомендации через Telegram WebApp
 function sendRecommendationToTelegram(recommendationText, phaseName, cycleDay) {
   try {
-    // Форматируем данные для отправки на сервер
+    // Проверяем, доступен ли Telegram WebApp
+    if (!window.Telegram?.WebApp) {
+      showNotification("❌ Telegram WebApp не доступен");
+      console.error("Telegram WebApp is not available");
+      return;
+    }
+
+    // Форматируем данные
     const dataToSend = {
+      type: "recommendation", // тип данных, чтобы сервер знал, что делать
       recommendation: recommendationText,
       phase: phaseName,
       cycleDay: cycleDay,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent, // для отладки
     };
-    
-    // Отправляем POST-запрос на сервер
-    fetch('https://fcycle-85.deno.dev/api/book', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(dataToSend),
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data.success) {
-        // Показываем пользователю уведомление об отправке
-        showNotification("✨ Recommendation sent to your chat!");
-      } else {
-        console.error('Server error:', data.error);
-        showNotification("❌ Failed to send recommendation");
-      }
-    })
-    .catch(error => {
-      console.error('Error sending recommendation:', error);
-      showNotification("❌ Error sending recommendation");
-    });
+
+    // Отправляем данные через Telegram WebApp
+    window.Telegram.WebApp.sendData(JSON.stringify(dataToSend));
+
+    // Показываем пользователю уведомление
+    showNotification("✨ Recommendation sent to your chat!");
+
+    console.log("Данные отправлены через Telegram.WebApp:", dataToSend);
   } catch (error) {
-    console.error("Error in sendRecommendationToTelegram:", error);
+    console.error("Ошибка в sendRecommendationToTelegram:", error);
+    showNotification("❌ Error sending recommendation");
   }
 }
 
