@@ -9,6 +9,9 @@ let appState = {
   dayNotes: {},
 }
 
+// Объявление Telegram WebApp
+const Telegram = window.Telegram ? window.Telegram : { WebApp: { sendData: () => {} } }
+
 // Phase definitions and recommendations
 const phases = {
   menstruation: {
@@ -236,6 +239,32 @@ function initializeEventListeners() {
   }
 }
 
+// Функция для отправки рекомендации в Telegram чат
+function sendRecommendationToTelegram(recommendationText, phaseName, cycleDay) {
+  try {
+    // Форматируем данные для отправки
+    const dataToSend = JSON.stringify({
+      type: "recommendation",
+      text: recommendationText,
+      phase: phaseName,
+      cycleDay: cycleDay,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Отправляем данные через Telegram WebApp API
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.sendData(dataToSend);
+      
+      // Показываем пользователю уведомление об отправке
+      showNotification("✨ Recommendation sent to your chat!");
+    } else {
+      console.log("Telegram WebApp not available");
+    }
+  } catch (error) {
+    console.error("Error sending recommendation to Telegram:", error);
+  }
+}
+
 // App Setup
 function setupApp() {
   const lastPeriodInput = document.getElementById("last-period")
@@ -376,6 +405,67 @@ function updateTodayView() {
   setTimeout(() => {
     recommendationCard.classList.remove("phase-transition")
   }, 2000)
+  
+  // Добавляем кнопку отправки рекомендации в чат (если её ещё нет)
+  const sendButtonContainer = document.getElementById("send-to-telegram-container");
+  if (!sendButtonContainer) {
+    // Создаем контейнер для кнопки
+    const container = document.createElement("div");
+    container.id = "send-to-telegram-container";
+    container.style.marginTop = "1rem";
+    container.style.textAlign = "center";
+    
+    // Создаем кнопку
+    const sendButton = document.createElement("button");
+    sendButton.id = "send-to-telegram-btn";
+    sendButton.textContent = "Send to Chat 💬";
+    sendButton.style.padding = "0.5rem 1rem";
+    sendButton.style.backgroundColor = "#0088cc";
+    sendButton.style.color = "white";
+    sendButton.style.border = "none";
+    sendButton.style.borderRadius = "20px";
+    sendButton.style.cursor = "pointer";
+    sendButton.style.fontSize = "0.9rem";
+    sendButton.style.fontWeight = "500";
+    sendButton.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+    sendButton.style.transition = "all 0.2s ease";
+    
+    // Добавляем hover эффект
+    sendButton.onmouseover = function() {
+      this.style.backgroundColor = "#0077b3";
+      this.style.transform = "translateY(-1px)";
+      this.style.boxShadow = "0 3px 6px rgba(0,0,0,0.15)";
+    };
+    
+    sendButton.onmouseout = function() {
+      this.style.backgroundColor = "#0088cc";
+      this.style.transform = "translateY(0)";
+      this.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+    };
+    
+    // Добавляем обработчик клика
+    sendButton.addEventListener("click", function() {
+      sendRecommendationToTelegram(
+        document.getElementById("recommendation-text").textContent,
+        currentPhase.name,
+        currentDay
+      );
+    });
+    
+    container.appendChild(sendButton);
+    
+    // Находим карточку рекомендаций и добавляем кнопку после неё
+    const recommendationSection = document.querySelector(".recommendation-section");
+    if (recommendationSection) {
+      recommendationSection.appendChild(container);
+    } else {
+      // Если нет специальной секции, добавляем после recommendation-card
+      const recCard = document.getElementById("recommendation-card");
+      if (recCard && recCard.parentNode) {
+        recCard.parentNode.appendChild(container);
+      }
+    }
+  }
 }
 
 // Mood Management
@@ -509,6 +599,49 @@ function openDayModal(date, cycleDay, phase) {
 
   appState.selectedDay = date
   modal.classList.remove("hidden")
+  
+  // Добавляем кнопку отправки в модальное окно (если её ещё нет)
+  const sendButtonInModal = document.getElementById("send-to-telegram-btn-modal");
+  if (!sendButtonInModal) {
+    // Создаем кнопку отправки
+    const sendButton = document.createElement("button");
+    sendButton.id = "send-to-telegram-btn-modal";
+    sendButton.textContent = "Send to Chat 💬";
+    sendButton.style.marginTop = "1rem";
+    sendButton.style.padding = "0.5rem 1rem";
+    sendButton.style.backgroundColor = "#0088cc";
+    sendButton.style.color = "white";
+    sendButton.style.border = "none";
+    sendButton.style.borderRadius = "20px";
+    sendButton.style.cursor = "pointer";
+    sendButton.style.fontSize = "0.9rem";
+    sendButton.style.width = "100%";
+    sendButton.style.fontWeight = "500";
+    
+    // Добавляем обработчик клика
+    sendButton.addEventListener("click", function() {
+      sendRecommendationToTelegram(
+        document.getElementById("modal-recommendation").textContent,
+        phase.name,
+        cycleDay
+      );
+    });
+    
+    // Находим контейнер модального окна и добавляем кнопку перед закрывающим элементом
+    const modalContent = document.querySelector(".modal-content");
+    if (modalContent) {
+      // Проверяем, есть ли уже кнопка
+      if (!modalContent.querySelector("#send-to-telegram-btn-modal")) {
+        // Ищем последний элемент перед закрывающим крестиком
+        const closeButton = document.getElementById("close-modal");
+        if (closeButton && closeButton.parentNode) {
+          closeButton.parentNode.insertBefore(sendButton, closeButton);
+        } else {
+          modalContent.appendChild(sendButton);
+        }
+      }
+    }
+  }
 }
 
 function closeModal() {
