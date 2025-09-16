@@ -245,35 +245,42 @@ function initializeEventListeners() {
   }
 }
 
-// ✅ НОВАЯ ФУНКЦИЯ: Отправка рекомендации через Telegram WebApp
+// 🆕 Отправка рекомендации через fetch (как в работающем сервере)
 function sendRecommendationToTelegram(recommendationText, phaseName, cycleDay) {
   try {
-    // Проверяем, доступен ли Telegram WebApp
-    if (!window.Telegram?.WebApp) {
-      showNotification("❌ Telegram WebApp не доступен");
-      console.error("Telegram WebApp is not available");
-      return;
-    }
-
-    // Форматируем данные
     const dataToSend = {
-      type: "recommendation", // тип данных, чтобы сервер знал, что делать
       recommendation: recommendationText,
       phase: phaseName,
       cycleDay: cycleDay,
       timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent, // для отладки
     };
 
-    // Отправляем данные через Telegram WebApp
-    window.Telegram.WebApp.sendData(JSON.stringify(dataToSend));
-
-    // Показываем пользователю уведомление
-    showNotification("✨ Recommendation sent to your chat!");
-
-    console.log("Данные отправлены через Telegram.WebApp:", dataToSend);
+    fetch('https://fcycle-85.deno.dev/api/book', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(dataToSend),
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        showNotification("✨ Recommendation sent to your chat!");
+      } else {
+        showNotification("❌ Failed to send recommendation");
+      }
+    })
+    .catch(error => {
+      console.error('Error sending recommendation:', error);
+      showNotification("❌ Error sending recommendation");
+    });
   } catch (error) {
-    console.error("Ошибка в sendRecommendationToTelegram:", error);
+    console.error("Error in sendRecommendationToTelegram:", error);
     showNotification("❌ Error sending recommendation");
   }
 }
