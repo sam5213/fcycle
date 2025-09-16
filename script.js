@@ -9,88 +9,8 @@ let appState = {
   dayNotes: {},
 }
 
-// Phase definitions and recommendations
-const phases = {
-  menstruation: {
-    name: "Menstruation",
-    color: "#E8B4CB",
-    days: [1, 2, 3, 4, 5],
-    icon: `<svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-            <circle cx="20" cy="20" r="15" fill="#E8B4CB" opacity="0.3"/>
-            <path d="M20 8C22 12 24 16 22 20C24 22 22 26 20 28C18 26 16 22 18 20C16 16 18 12 20 8Z" fill="#E8B4CB"/>
-            <circle cx="20" cy="30" r="3" fill="#D4A5C2"/>
-        </svg>`,
-    recommendations: [
-      "Let your body rest today. Drink warm ginger tea, hug your pillow, take your time.",
-      "You deserve all the comfort today. Warm baths, soft blankets, and gentle movements.",
-      "Your body is doing incredible work. Honor it with rest, warmth, and self-compassion.",
-      "Today is for slowing down. Listen to your body and give it what it needs.",
-      "Embrace the pause. Your body is renewing itself - treat it with extra tenderness.",
-      "Cozy up with your favorite book and let yourself be completely present.",
-      "Your sensitivity is a superpower today. Feel everything deeply and without judgment.",
-    ],
-    activities: ["Gentle yoga", "Warm baths", "Herbal tea", "Journaling", "Rest"],
-  },
-  follicular: {
-    name: "Follicular",
-    color: "#F4C2C2",
-    days: [6, 7, 8, 9, 10, 11, 12, 13],
-    icon: `<svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-            <path d="M20 5L22 15L30 10L25 18L35 20L25 22L30 30L22 25L20 35L18 25L10 30L15 22L5 20L15 18L10 10L18 15L20 5Z" fill="#F4C2C2"/>
-            <circle cx="20" cy="20" r="8" fill="#F4C2C2" opacity="0.5"/>
-        </svg>`,
-    recommendations: [
-      "Your energy is growing! The perfect day for new beginnings and creativity.",
-      "Feel that spark returning? Channel it into something beautiful today.",
-      "Your body is awakening. Perfect time for planning and fresh starts.",
-      "Energy is building within you. What new adventure calls to your heart?",
-      "Like a flower beginning to bloom, you're ready for new possibilities.",
-      "Your mind is sharp and clear. Perfect time for learning something new.",
-      "Trust the creative ideas flowing through you - they're gifts from your awakening energy.",
-    ],
-    activities: ["Creative projects", "Planning", "Learning", "Light exercise", "Socializing"],
-  },
-  ovulation: {
-    name: "Ovulation",
-    color: "#F4E4BC",
-    days: [14, 15, 16],
-    icon: `<svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-            <circle cx="20" cy="20" r="12" fill="#F4E4BC"/>
-            <path d="M20 2L22 8L28 6L26 12L32 14L26 16L28 22L22 20L20 26L18 20L12 22L14 16L8 14L14 12L12 6L18 8L20 2Z" fill="#E8D5A3"/>
-            <circle cx="20" cy="20" r="6" fill="#F4E4BC" opacity="0.7"/>
-        </svg>`,
-    recommendations: [
-      "You're glowing! Social meetings, romance, bold ideas - everything will inspire.",
-      "Your radiance is magnetic today. Perfect time for important conversations.",
-      "You're at your most vibrant. Trust your intuition and speak your truth.",
-      "Your energy is at its peak. Time to shine and connect with others.",
-      "Like the sun at its brightest, you're ready to illuminate the world.",
-      "Your confidence is naturally high - perfect time for presentations or dates.",
-      "You're a magnet for opportunities today. Say yes to invitations and new experiences.",
-    ],
-    activities: ["Important meetings", "Date nights", "Public speaking", "Networking", "Bold decisions"],
-  },
-  luteal: {
-    name: "Luteal",
-    color: "#C8A8E8",
-    days: [17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28],
-    icon: `<svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-            <path d="M20 5C25 8 30 15 28 20C30 25 25 32 20 35C15 32 10 25 12 20C10 15 15 8 20 5Z" fill="#C8A8E8"/>
-            <circle cx="20" cy="18" r="4" fill="#B8A8D8"/>
-            <path d="M16 25C16 25 18 28 20 27C22 28 24 25 24 25" stroke="#B8A8D8" stroke-width="2" fill="none"/>
-        </svg>`,
-    recommendations: [
-      "Let yourself be soft. Finish your tasks, cook your favorite food, and meditate.",
-      "Time to turn inward. Your wisdom is deepest during these gentle days.",
-      "Nesting energy is strong. Create cozy spaces and nurture yourself.",
-      "Your intuition is heightened. Trust the quiet voice within you.",
-      "Like the moon waning, it's time to release and prepare for renewal.",
-      "Perfect time for organizing your space and completing projects.",
-      "Your analytical mind is sharp - great for reviewing and planning ahead.",
-    ],
-    activities: ["Organizing", "Completing projects", "Meditation", "Cooking", "Self-reflection"],
-  },
-}
+// 🆕 Загружаемые из Gist рекомендации (инициализируем пустым объектом)
+let phases = {};
 
 // Mood emojis mapping
 const moodEmojis = {
@@ -102,12 +22,42 @@ const moodEmojis = {
   blooming: "🌸",
 }
 
+// 🆕 Функция загрузки рекомендаций из Gist
+async function loadRecommendationsFromGist() {
+  const gistId = "064a337ec1de1bf772d8942bedcae1be"; 
+  const fileName = "recommendations.json";
+
+  try {
+    const response = await fetch(`https://api.github.com/gists/${gistId}`);
+    if (!response.ok) {
+      throw new Error(`Ошибка загрузки Gist: ${response.status}`);
+    }
+
+    const gist = await response.json();
+    const fileContent = gist.files[fileName]?.content;
+
+    if (!fileContent) {
+      throw new Error(`Файл ${fileName} не найден в Gist`);
+    }
+
+    phases = JSON.parse(fileContent);
+    console.log("✅ Рекомендации успешно загружены из Gist:", phases);
+  } catch (error) {
+    console.error("❌ Ошибка при загрузке рекомендаций:", error);
+    alert("Не удалось загрузить рекомендации. Проверьте подключение к интернету.");
+    // Можно добавить fallback-данные здесь, если нужно
+  }
+}
+
 // Initialize app
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  // 🆕 Сначала загружаем рекомендации
+  await loadRecommendationsFromGist();
+
   // Инициализация Telegram WebApp
   if (window.Telegram?.WebApp) {
-    window.Telegram.WebApp.ready(); // Сообщаем Telegram, что приложение готово
-    window.Telegram.WebApp.expand(); // Разворачиваем на весь экран (опционально)
+    window.Telegram.WebApp.ready();
+    window.Telegram.WebApp.expand();
     console.log("Telegram WebApp initialized");
   } else {
     console.warn("Telegram WebApp not detected. Running in standalone mode?");
@@ -245,7 +195,7 @@ function initializeEventListeners() {
   }
 }
 
-// 🆕 Отправка рекомендации через fetch (как в работающем сервере)
+// 🆕 Функция для отправки рекомендации через fetch (как в работающем сервере)
 function sendRecommendationToTelegram(recommendationText, phaseName, cycleDay) {
   try {
     const dataToSend = {
@@ -703,7 +653,7 @@ function updateDiaryView() {
     allEntries.push({
       date: new Date(entry.date),
       type: "mood",
-      data: entry,
+       entry,
     })
   })
 
@@ -712,7 +662,7 @@ function updateDiaryView() {
     allEntries.push({
       date: new Date(dateStr),
       type: "note",
-      data: { note, date: dateStr },
+       { note, date: dateStr },
     })
   })
 
