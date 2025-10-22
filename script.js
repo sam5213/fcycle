@@ -548,7 +548,7 @@ function generateCalendar() {
 // Day Modal
 function openDayModal(date, cycleDay, phase) {
   const modal = document.getElementById("day-modal")
-  const dateStr = date.toLocaleDateString("en-US", {
+  const dateStr = date.toLocaleDateString("ru-RU", {
     weekday: "long",
     year: "numeric",
     month: "long",
@@ -785,7 +785,7 @@ function loadAppState() {
 
 // Utility Functions
 function formatDate(date) {
-  return date.toLocaleDateString("en-US", {
+  return date.toLocaleDateString("ru-RU", {
     year: "numeric",
     month: "long",
     day: "numeric",
