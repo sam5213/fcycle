@@ -389,9 +389,9 @@ function updateTodayView() {
     const sendButton = document.createElement("button");
     sendButton.id = "send-to-telegram-btn";
     sendButton.textContent = "";
-    sendButton.style.padding = "0.5rem 1rem";
-    sendButton.style.backgroundColor = "#0088cc";
-    sendButton.style.color = "white";
+    sendButton.style.padding = "25px";
+    sendButton.style.backgroundColor = "#e8b4cb00";
+    sendButton.style.color = "#ffffffdb";
     sendButton.style.border = "none";
     sendButton.style.borderRadius = "50%";
     sendButton.style.cursor = "pointer";
@@ -400,7 +400,7 @@ function updateTodayView() {
     sendButton.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
     sendButton.style.transition = "all 0.2s ease";
     sendButton.style.backgroundImage = "url('tg.png')";
-    sendButton.style.backgroundSize = "60%"; // Размер иконки
+    sendButton.style.backgroundSize = "70%"; // Размер иконки
     sendButton.style.backgroundRepeat = "no-repeat";
     sendButton.style.backgroundPosition = "center";
     
