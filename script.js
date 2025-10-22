@@ -406,13 +406,13 @@ function updateTodayView() {
     
     // Добавляем hover эффект
     sendButton.onmouseover = function() {
-      this.style.backgroundColor = "#0077b3";
+      this.style.backgroundColor = "#d4a5c29c";
       this.style.transform = "translateY(-1px)";
       this.style.boxShadow = "0 3px 6px rgba(0,0,0,0.15)";
     };
     
     sendButton.onmouseout = function() {
-      this.style.backgroundColor = "#0088cc";
+      this.style.backgroundColor = "##d4a5c270";
       this.style.transform = "translateY(0)";
       this.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
     };
