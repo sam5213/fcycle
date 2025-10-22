@@ -555,7 +555,7 @@ function openDayModal(date, cycleDay, phase) {
     day: "numeric",
   })
 
-  document.getElementById("modal-date").textContent = `${dateStr} - Day ${cycleDay}`
+  document.getElementById("modal-date").textContent = `${dateStr} - День ${cycleDay}`
   document.getElementById("modal-phase").className = `modal-phase ${phase.name.toLowerCase()}`
   document.getElementById("modal-phase").querySelector(".phase-name").textContent = phase.name
 
@@ -683,7 +683,7 @@ function updateDiaryView() {
     const entryElement = document.createElement("div")
     entryElement.className = "diary-entry fade-in"
 
-    const dateStr = entry.date.toLocaleDateString("en-US", {
+    const dateStr = entry.date.toLocaleDateString("ru-RU", {
       weekday: "long",
       year: "numeric",
       month: "long",
