@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <title>Luna - Your Gentle Cycle Companion</title>
+    <title>Луна — твой верный спутник на протяжении всего цикла</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -19,17 +19,17 @@
                         <path d="M32 63C32 63 36 67 40 65C44 67 48 63 48 63" stroke="#D4A5C2" stroke-width="2" fill="none"/>
                     </svg>
                 </div>
-                <h1>Welcome to Luna</h1>
-                <p>Your gentle companion for understanding your beautiful cycle</p>
+                <h1>Добро пожаловать на Луну</h1>
+                <p>Ваш нежный спутник для понимания вашего прекрасного цикла</p>
                 
                 <div class="setup-form">
                     <div class="form-group">
-                        <label for="last-period">When did your last period start?</label>
+                        <label for="last-period">Укажите дату начала последних месячных</label>
                         <input type="date" id="last-period" required>
                     </div>
                     
                     <div class="form-group">
-                        <label for="cycle-length">Your average cycle length</label>
+                        <label for="cycle-length">Ваша средняя продолжительность цикла</label>
                         <select id="cycle-length">
                             <option value="21">21 days</option>
                             <option value="22">22 days</option>
@@ -49,7 +49,7 @@
                         </select>
                     </div>
                     
-                    <button id="start-journey" class="primary-button">Begin Your Journey</button>
+                    <button id="start-journey" class="primary-button">Начинайте Свое путешествие</button>
                 </div>
             </div>
         </div>
@@ -63,7 +63,7 @@
                         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
                         <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2"/>
                     </svg>
-                    <span>Today</span>
+                    <span>Сегодня</span>
                 </button>
                 <button class="nav-item" data-tab="calendar">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -72,14 +72,14 @@
                         <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
                         <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
                     </svg>
-                    <span>Calendar</span>
+                    <span>Календарь</span>
                 </button>
                 <button class="nav-item" data-tab="diary">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" stroke="currentColor" stroke-width="2"/>
                         <polygon points="18,2 22,6 12,16 8,16 8,12 18,2" stroke="currentColor" stroke-width="2"/>
                     </svg>
-                    <span>Diary</span>
+                    <span>Дневник</span>
                 </button>
             </nav>
 
@@ -88,7 +88,7 @@
                 <!-- Today Tab -->
                 <div id="today-tab" class="tab-pane active">
                     <div class="today-header">
-                        <h2 id="greeting">Good morning, beautiful</h2>
+                        <h2 id="greeting">Доброе утро, красавица</h2>
                         <div class="cycle-info">
                             <div class="cycle-day">
                                 <span class="day-number" id="current-day">1</span>
@@ -96,7 +96,7 @@
                             </div>
                             <div class="phase-indicator" id="phase-indicator">
                                 <div class="phase-circle"></div>
-                                <span class="phase-name" id="phase-name">Menstruation</span>
+                                <span class="phase-name" id="phase-name">Менструация</span>
                             </div>
                         </div>
                     </div>
@@ -110,17 +110,17 @@
                         <p id="recommendation-text">Let your body rest today. Drink warm ginger tea, hug your pillow, take your time.</p>
                         <!-- Added gentle activities suggestion -->
                         <div class="activities-hint" id="activities-hint">
-                            <span class="activities-label">Gentle suggestions:</span>
+                            <span class="activities-label">Бережные предложения:</span>
                             <div class="activities-list" id="activities-list">
-                                <span class="activity-tag">Rest</span>
-                                <span class="activity-tag">Warm tea</span>
-                                <span class="activity-tag">Gentle yoga</span>
+                                <span class="activity-tag">Отдых</span>
+                                <span class="activity-tag">Теплый чай</span>
+                                <span class="activity-tag">Йога</span>
                             </div>
                         </div>
                     </div>
                     
                     <div class="mood-section">
-                        <h3>How are you feeling today?</h3>
+                        <h3>Как ты себя сегодня чувствуешь?</h3>
                         <div class="mood-selector">
                             <button class="mood-btn" data-mood="happy">😊</button>
                             <button class="mood-btn" data-mood="neutral">😐</button>
@@ -129,30 +129,30 @@
                             <button class="mood-btn" data-mood="strong">💪</button>
                             <button class="mood-btn" data-mood="blooming">🌸</button>
                         </div>
-                        <button id="save-mood" class="secondary-button">Save Today's Mood</button>
+                        <button id="save-mood" class="secondary-button">Сохраните сегодняшнее настроение</button>
                     </div>
                 </div>
 
                 <!-- Calendar Tab -->
                 <div id="calendar-tab" class="tab-pane">
                     <div class="calendar-header">
-                        <h2>Your Cycle Calendar</h2>
+                        <h2>Ваш календарь циклов</h2>
                         <div class="legend">
                             <div class="legend-item">
                                 <div class="legend-color menstruation"></div>
-                                <span>Menstruation</span>
+                                <span>Менструация</span>
                             </div>
                             <div class="legend-item">
                                 <div class="legend-color follicular"></div>
-                                <span>Follicular</span>
+                                <span>Фолликулярная фаза</span>
                             </div>
                             <div class="legend-item">
                                 <div class="legend-color ovulation"></div>
-                                <span>Ovulation</span>
+                                <span>Овуляция</span>
                             </div>
                             <div class="legend-item">
                                 <div class="legend-color luteal"></div>
-                                <span>Luteal</span>
+                                <span>Лютеиновая фаза</span>
                             </div>
                         </div>
                     </div>
@@ -162,8 +162,8 @@
                 <!-- Diary Tab -->
                 <div id="diary-tab" class="tab-pane">
                     <div class="diary-header">
-                        <h2>Your Beautiful Journey</h2>
-                        <p>Every feeling is valid, every day is precious</p>
+                        <h2>Ваше прекрасное путешествие</h2>
+                        <p>Каждое чувство имеет значимость, каждый день драгоценен</p>
                     </div>
                     <div id="diary-entries" class="diary-entries"></div>
                 </div>
@@ -174,19 +174,19 @@
         <div id="day-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3 id="modal-date">Day 1</h3>
+                    <h3 id="modal-date">День 1</h3>
                     <button id="close-modal" class="close-btn">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="modal-phase" id="modal-phase">
                         <div class="phase-circle"></div>
-                        <span class="phase-name">Menstruation</span>
+                        <span class="phase-name">Менструация</span>
                     </div>
-                    <p id="modal-recommendation">Your gentle recommendation for today...</p>
+                    <p id="modal-recommendation">Ваша бережная рекомендация на сегодня...</p>
                     <div class="modal-note">
-                        <label for="modal-note-input">Your note for this day:</label>
-                        <textarea id="modal-note-input" placeholder="How did you feel? What did you learn about yourself?"></textarea>
-                        <button id="save-note" class="secondary-button">Save Note</button>
+                        <label for="modal-note-input">Ваша заметка на этот день:</label>
+                        <textarea id="modal-note-input" placeholder="Что вы чувствовали? Что вы узнали о себе?"></textarea>
+                        <button id="save-note" class="secondary-button">Сохранить заметку</button>
                     </div>
                 </div>
             </div>
@@ -196,7 +196,7 @@
         <div id="notification" class="notification hidden">
             <div class="notification-content">
                 <div class="notification-icon">🌙</div>
-                <p id="notification-text">Your period might start in 2 days. Time to be extra gentle with yourself.</p>
+                <p id="notification-text">Месячные могут начаться через 2 дня. Самое время быть особенно бережной к себе.</p>
             </div>
         </div>
     </div>
