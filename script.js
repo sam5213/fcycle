@@ -580,17 +580,21 @@ function openDayModal(date, cycleDay, phase) {
     // Создаем кнопку отправки
     const sendButton = document.createElement("button");
     sendButton.id = "send-to-telegram-btn-modal";
-    sendButton.textContent = "Send to Chat 💬";
+    sendButton.textContent = "";
     sendButton.style.marginTop = "1rem";
-    sendButton.style.padding = "0.5rem 1rem";
-    sendButton.style.backgroundColor = "#0088cc";
+    sendButton.style.padding = "25px";
+    sendButton.style.backgroundColor = "#e8b4cb00";
     sendButton.style.color = "white";
     sendButton.style.border = "none";
-    sendButton.style.borderRadius = "20px";
+    sendButton.style.borderRadius = "50%";
     sendButton.style.cursor = "pointer";
-    sendButton.style.fontSize = "0.9rem";
-    sendButton.style.width = "100%";
+    // sendButton.style.fontSize = "0.9rem";
+    // sendButton.style.width = "100%";
     sendButton.style.fontWeight = "500";
+    sendButton.style.backgroundImage = "url('tg.png')";
+    sendButton.style.backgroundSize = "60%"; // Размер иконки
+    sendButton.style.backgroundRepeat = "no-repeat";
+    sendButton.style.backgroundPosition = "center";
     
     // Добавляем обработчик клика
     sendButton.addEventListener("click", function() {
