@@ -241,7 +241,7 @@ function setupApp() {
   const cycleLengthSelect = document.getElementById("cycle-length")
 
   if (!lastPeriodInput.value) {
-    alert("Please select the start date of your last period")
+    alert("Пожалуйста, выберите дату начала вашей последней менструации")
     return
   }
 
@@ -330,9 +330,9 @@ function updateTodayView() {
 
   // Update greeting based on time
   const hour = new Date().getHours()
-  let greeting = "Good morning, beautiful"
-  if (hour >= 12 && hour < 17) greeting = "Good afternoon, lovely"
-  else if (hour >= 17) greeting = "Good evening, darling"
+  let greeting = "Доброе утро, красавица"
+  if (hour >= 12 && hour < 17) greeting = "Добрый день, милая"
+  else if (hour >= 17) greeting = "Добрый вечер, дорогая"
 
   document.getElementById("greeting").textContent = greeting
 
@@ -458,7 +458,7 @@ function saveDailyMood() {
   //const note = document.getElementById("daily-note").value
 
   if (!selectedMood) {
-    alert("Please select how you're feeling today")
+    alert("Пожалуйста, выберите, как вы себя чувствуете сегодня")
     return
   }
 
@@ -475,7 +475,7 @@ function saveDailyMood() {
   // Show success feedback
   const button = document.getElementById("save-mood")
   const originalText = button.textContent
-  button.textContent = "Saved! 💕"
+  button.textContent = "Сохранили! 💕"
   button.style.background = "#B8E6B8"
 
   setTimeout(() => {
@@ -500,7 +500,7 @@ function generateCalendar() {
   const startingDayOfWeek = firstDay.getDay()
 
   // Add day headers
-  const dayHeaders = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  const dayHeaders = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
   dayHeaders.forEach((day) => {
     const header = document.createElement("div")
     header.textContent = day
@@ -713,39 +713,39 @@ function checkForNotifications() {
   const daysUntilPeriod = appState.cycleLength - currentDay + 1
 
   if (daysUntilPeriod === 2) {
-    showNotification("Your period might start in 2 days. Time to be extra gentle with yourself. 🌙")
+    showNotification("Месячные могут начаться через 2 дня. Самое время быть особенно бережной к себе. 🌙")
   } else if (daysUntilPeriod === 1) {
-    showNotification("Your period might start tomorrow. Prepare your cozy space and favorite comfort items. 🌸")
+    showNotification("Месячные могут начаться завтра. Подготовьте свое уютное пространство и любимые предметы комфорта. 🌸")
   }
 
   // Show phase-specific gentle reminders
   const currentPhase = getPhaseForDay(currentDay)
   if (currentDay === 1) {
     setTimeout(() => {
-      showNotification("Welcome to your renewal phase. Your body is doing beautiful work. 💕")
+      showNotification("Добро пожаловать на этап вашего обновления. Ваше тело делает прекрасную работу. 💕")
     }, 3000)
   } else if (currentDay === 6) {
     setTimeout(() => {
-      showNotification("Feel that energy returning? Your creative phase is beginning! ✨")
+      showNotification("Чувствуете, как к вам возвращается энергия? У вас начинается творческая фаза! ✨")
     }, 3000)
   } else if (currentDay === 14) {
     setTimeout(() => {
-      showNotification("You're glowing today! Perfect time to shine and connect. 🌟")
+      showNotification("Ты сегодня сияешь! Идеальное время, чтобы блистать и общаться. 🌟")
     }, 3000)
   } else if (currentDay === 17) {
     setTimeout(() => {
-      showNotification("Time to turn inward. Your wisdom is deepest now. 🌙")
+      showNotification("Пришло время обратиться внутрь себя. Сейчас твоя мудрость глубочайшая. 🌙")
     }, 3000)
   }
 
   const moodEntryCount = Object.keys(appState.moodEntries).length
   if (moodEntryCount === 7) {
     setTimeout(() => {
-      showNotification("You've been tracking for a week! You're building such a beautiful practice. 🌱")
+      showNotification("Вы занимаетесь отслеживанием уже неделю! Вы создаёте такую прекрасную практику. 🌱")
     }, 5000)
   } else if (moodEntryCount === 30) {
     setTimeout(() => {
-      showNotification("A whole month of self-awareness! You're truly honoring your journey. 🌺")
+      showNotification("Целый месяц самопознания! Вы по-настоящему цените свой путь. 🌺")
     }, 5000)
   }
 }
