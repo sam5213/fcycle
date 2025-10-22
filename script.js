@@ -361,13 +361,13 @@ function updateTodayView() {
   const todayMood = appState.moodEntries[today]
   if (todayMood) {
     document.querySelector(`[data-mood="${todayMood.mood}"]`).classList.add("selected")
-    document.getElementById("daily-note").value = todayMood.note || ""
+    //document.getElementById("daily-note").value = todayMood.note || ""
   } else {
     // Clear previous selections
     document.querySelectorAll(".mood-btn").forEach((btn) => {
       btn.classList.remove("selected")
     })
-    document.getElementById("daily-note").value = ""
+    //document.getElementById("daily-note").value = ""
   }
 
   const recommendationCard = document.getElementById("recommendation-card")
@@ -455,7 +455,7 @@ function selectMood(mood) {
 
 function saveDailyMood() {
   const selectedMood = document.querySelector(".mood-btn.selected")
-  const note = document.getElementById("daily-note").value
+  //const note = document.getElementById("daily-note").value
 
   if (!selectedMood) {
     alert("Please select how you're feeling today")
@@ -465,7 +465,7 @@ function saveDailyMood() {
   const today = new Date().toDateString()
   appState.moodEntries[today] = {
     mood: selectedMood.dataset.mood,
-    note: note,
+    //note: note,
     date: today,
     cycleDay: getCurrentCycleDay(),
   }
