@@ -388,17 +388,21 @@ function updateTodayView() {
     // Создаем кнопку
     const sendButton = document.createElement("button");
     sendButton.id = "send-to-telegram-btn";
-    sendButton.textContent = "Send to Chat 💬";
+    sendButton.textContent = "";
     sendButton.style.padding = "0.5rem 1rem";
     sendButton.style.backgroundColor = "#0088cc";
     sendButton.style.color = "white";
     sendButton.style.border = "none";
-    sendButton.style.borderRadius = "20px";
+    sendButton.style.borderRadius = "50%";
     sendButton.style.cursor = "pointer";
-    sendButton.style.fontSize = "0.9rem";
-    sendButton.style.fontWeight = "500";
+    //sendButton.style.fontSize = "0.9rem";
+    //sendButton.style.fontWeight = "500";
     sendButton.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
     sendButton.style.transition = "all 0.2s ease";
+    sendButton.style.backgroundImage = "url('tg.png')";
+    sendButton.style.backgroundSize = "60%"; // Размер иконки
+    sendButton.style.backgroundRepeat = "no-repeat";
+    sendButton.style.backgroundPosition = "center";
     
     // Добавляем hover эффект
     sendButton.onmouseover = function() {
