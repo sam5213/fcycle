@@ -672,8 +672,8 @@ function updateDiaryView() {
   if (allEntries.length === 0) {
     diaryEntries.innerHTML = `
             <div style="text-align: center; color: #8B7B8B; padding: 2rem;">
-                <p>Your beautiful journey starts here...</p>
-                <p style="font-size: 0.9rem; margin-top: 0.5rem;">Add moods and notes to see them in your diary</p>
+                <p>Ваше прекрасное путешествие начинается здесь...</p>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem;">Добавляйте настроения и заметки, чтобы видеть их в своем дневнике</p>
             </div>
         `
     return
