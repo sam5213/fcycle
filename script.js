@@ -659,7 +659,7 @@ function updateDiaryView() {
     allEntries.push({
       date: new Date(dateStr),
       type: "note",
-       { note, date: dateStr },
+      payload: { note, date: dateStr },
     });
   });
 
