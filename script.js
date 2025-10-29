@@ -64,11 +64,9 @@ async function loadUserDataFromServer() {
 
     const data = await response.json();
     if (data.appState) {
-      // Объединяем данные: сначала локальные, потом загруженные (локальные приоритетнее)
       appState = { ...data.appState, ...appState };
-      saveAppState(); // Сохраняем объединённое состояние локально
+      saveAppState();
       console.log("✅ Данные пользователя загружены из облака");
-      // Перезагружаем интерфейс
       if (appState.isSetup) {
         updateTodayView();
         generateCalendar();
@@ -111,10 +109,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.body.style.opacity = "0";
   document.body.style.transition = "opacity 0.5s ease";
 
-  // 🔥 Загружаем данные из облака ПЕРЕД загрузкой локальных
   await loadUserDataFromServer();
-  loadAppState(); // Загружаем локальные (они перезапишут, если были изменения)
-
+  loadAppState();
   initializeEventListeners();
 
   if (appState.isSetup) {
@@ -253,6 +249,7 @@ function sendRecommendationToTelegram(recommendationText, phaseName, cycleDay) {
       if (data.success) {
         showNotification("✨ Recommendation sent to your chat!");
       } else {
+        console.error('Server error:', data.error);
         showNotification("❌ Failed to send recommendation");
       }
     })
@@ -262,7 +259,6 @@ function sendRecommendationToTelegram(recommendationText, phaseName, cycleDay) {
     });
   } catch (error) {
     console.error("Error in sendRecommendationToTelegram:", error);
-    showNotification("❌ Error sending recommendation");
   }
 }
 
@@ -316,12 +312,23 @@ function switchTab(tabName) {
 
   appState.currentTab = tabName;
 
+  // Refresh content based on tab
   if (tabName === "calendar") {
     generateCalendar();
   } else if (tabName === "diary") {
     updateDiaryView();
   } else if (tabName === "today") {
     updateTodayView();
+  }
+
+  // 🆕 Показываем или скрываем плавающую кнопку
+  const floatBtn = document.getElementById("float-new-cycle-btn");
+  if (floatBtn) {
+    if (tabName === "today") {
+      floatBtn.style.display = "flex";
+    } else {
+      floatBtn.style.display = "none";
+    }
   }
 }
 
@@ -342,7 +349,7 @@ function getPhaseForDay(day) {
       return { name: phaseName, ...phase };
     }
   }
-  return phases.menstruation;
+  return phases.menstruation; // Default fallback
 }
 
 function getDayOfCycle(date) {
@@ -359,15 +366,19 @@ function updateTodayView() {
   const currentDay = getCurrentCycleDay();
   const currentPhase = getPhaseForDay(currentDay);
 
+  // Update greeting based on time
   const hour = new Date().getHours();
   let greeting = "Доброе утро, красавица";
   if (hour >= 12 && hour < 17) greeting = "Добрый день, милая";
   else if (hour >= 17) greeting = "Добрый вечер, дорогая";
 
   document.getElementById("greeting").textContent = greeting;
+
+  // Update cycle info
   document.getElementById("current-day").textContent = currentDay;
   document.getElementById("phase-name").textContent = currentPhase.name;
 
+  // Update phase indicator
   const phaseIndicator = document.getElementById("phase-indicator");
   phaseIndicator.className = `phase-indicator ${currentPhase.name.toLowerCase()}`;
 
@@ -383,6 +394,7 @@ function updateTodayView() {
       .join("");
   }
 
+  // Load today's mood if exists
   const today = new Date().toDateString();
   const todayMood = appState.moodEntries[today];
   if (todayMood) {
@@ -399,58 +411,46 @@ function updateTodayView() {
     recommendationCard.classList.remove("phase-transition");
   }, 2000);
 
-  const sendButtonContainer = document.getElementById("send-to-telegram-container");
-  if (!sendButtonContainer) {
-    const container = document.createElement("div");
-    container.id = "send-to-telegram-container";
-    container.style.marginTop = "1rem";
-    container.style.textAlign = "center";
+  // 🆕 Добавляем плавающую кнопку "Новый цикл?" (если её ещё нет)
+  const existingFloatBtn = document.getElementById("float-new-cycle-btn");
+  if (!existingFloatBtn) {
+    const floatBtn = document.createElement("button");
+    floatBtn.id = "float-new-cycle-btn";
+    floatBtn.title = "Новый цикл?";
+    floatBtn.innerHTML = "🌙"; // Можно заменить на SVG-иконку
+    floatBtn.style.position = "fixed";
+    floatBtn.style.bottom = "100px"; // Выше кнопок навигации
+    floatBtn.style.right = "20px";
+    floatBtn.style.width = "50px";
+    floatBtn.style.height = "50px";
+    floatBtn.style.borderRadius = "50%";
+    floatBtn.style.backgroundColor = "rgba(212, 165, 194, 0.8)"; // #d4a5c2 с прозрачностью
+    floatBtn.style.color = "white";
+    floatBtn.style.border = "none";
+    floatBtn.style.fontSize = "24px";
+    floatBtn.style.cursor = "pointer";
+    floatBtn.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+    floatBtn.style.zIndex = "100";
+    floatBtn.style.display = "flex";
+    floatBtn.style.alignItems = "center";
+    floatBtn.style.justifyContent = "center";
+    floatBtn.style.transition = "all 0.2s ease";
 
-    const sendButton = document.createElement("button");
-    sendButton.id = "send-to-telegram-btn";
-    sendButton.textContent = "";
-    sendButton.style.padding = "25px";
-    sendButton.style.backgroundColor = "#e8b4cb00";
-    sendButton.style.color = "#ffffffdb";
-    sendButton.style.border = "none";
-    sendButton.style.borderRadius = "50%";
-    sendButton.style.cursor = "pointer";
-    sendButton.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
-    sendButton.style.transition = "all 0.2s ease";
-    sendButton.style.backgroundImage = "url('tg.png')";
-    sendButton.style.backgroundSize = "70%";
-    sendButton.style.backgroundRepeat = "no-repeat";
-    sendButton.style.backgroundPosition = "center";
-
-    sendButton.onmouseover = function() {
-      this.style.backgroundColor = "#d4a5c29c";
-      this.style.transform = "translateY(-1px)";
-      this.style.boxShadow = "0 3px 6px rgba(0,0,0,0.15)";
-    };
-
-    sendButton.onmouseout = function() {
-      this.style.backgroundColor = "#d4a5c270";
-      this.style.transform = "translateY(0)";
-      this.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
-    };
-
-    sendButton.addEventListener("click", function() {
-      sendRecommendationToTelegram(
-        document.getElementById("recommendation-text").textContent,
-        currentPhase.name,
-        currentDay
-      );
+    floatBtn.addEventListener("click", () => {
+      openNewCycleDialog(); // Открываем диалог выбора
     });
 
-    container.appendChild(sendButton);
-    const recommendationSection = document.querySelector(".recommendation-section");
-    if (recommendationSection) {
-      recommendationSection.appendChild(container);
+    document.body.appendChild(floatBtn);
+  }
+
+  // Показываем кнопку только на вкладке "Сегодня"
+  const todayTab = document.getElementById("today-tab");
+  const floatBtn = document.getElementById("float-new-cycle-btn");
+  if (floatBtn) {
+    if (todayTab.classList.contains("active")) {
+      floatBtn.style.display = "flex";
     } else {
-      const recCard = document.getElementById("recommendation-card");
-      if (recCard && recCard.parentNode) {
-        recCard.parentNode.appendChild(container);
-      }
+      floatBtn.style.display = "none";
     }
   }
 }
@@ -462,6 +462,8 @@ function selectMood(mood) {
   });
   const selectedBtn = document.querySelector(`[data-mood="${mood}"]`);
   selectedBtn.classList.add("selected");
+
+  // Add gentle animation feedback
   selectedBtn.style.transform = "scale(1.2)";
   setTimeout(() => {
     selectedBtn.style.transform = "";
@@ -470,6 +472,8 @@ function selectMood(mood) {
 
 function saveDailyMood() {
   const selectedMood = document.querySelector(".mood-btn.selected");
+  const note = document.getElementById("daily-note").value;
+
   if (!selectedMood) {
     alert("Пожалуйста, выберите, как вы себя чувствуете сегодня");
     return;
@@ -478,6 +482,7 @@ function saveDailyMood() {
   const today = new Date().toDateString();
   appState.moodEntries[today] = {
     mood: selectedMood.dataset.mood,
+    note: note,
     date: today,
     cycleDay: getCurrentCycleDay(),
   };
@@ -487,10 +492,12 @@ function saveDailyMood() {
   // 🔥 Сразу сохраняем в облако
   saveUserDataToServer();
 
+  // Show success feedback
   const button = document.getElementById("save-mood");
   const originalText = button.textContent;
   button.textContent = "Сохранили! 💕";
   button.style.background = "#B8E6B8";
+
   setTimeout(() => {
     button.textContent = originalText;
     button.style.background = "";
@@ -506,11 +513,13 @@ function generateCalendar() {
   const currentMonth = today.getMonth();
   const currentYear = today.getFullYear();
 
+  // Get first day of month and number of days
   const firstDay = new Date(currentYear, currentMonth, 1);
   const lastDay = new Date(currentYear, currentMonth + 1, 0);
   const daysInMonth = lastDay.getDate();
   const startingDayOfWeek = firstDay.getDay();
 
+  // Add day headers
   const dayHeaders = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
   dayHeaders.forEach((day) => {
     const header = document.createElement("div");
@@ -523,12 +532,14 @@ function generateCalendar() {
     calendarGrid.appendChild(header);
   });
 
+  // Add empty cells for days before month starts
   for (let i = 0; i < startingDayOfWeek; i++) {
     const emptyDay = document.createElement("div");
     emptyDay.className = "calendar-day empty";
     calendarGrid.appendChild(emptyDay);
   }
 
+  // Add days of the month
   for (let day = 1; day <= daysInMonth; day++) {
     const dayElement = document.createElement("div");
     dayElement.className = "calendar-day";
@@ -538,14 +549,18 @@ function generateCalendar() {
     const cycleDay = getDayOfCycle(dayDate);
     const phase = getPhaseForDay(cycleDay);
 
+    // Apply phase color
     dayElement.style.backgroundColor = phase.color;
     dayElement.style.color = "white";
 
+    // Mark current day
     if (day === today.getDate()) {
       dayElement.classList.add("current");
     }
 
+    // Add click handler
     dayElement.addEventListener("click", () => openDayModal(dayDate, cycleDay, phase));
+
     calendarGrid.appendChild(dayElement);
   }
 }
@@ -567,49 +582,13 @@ function openDayModal(date, cycleDay, phase) {
   const randomRecommendation = phase.recommendations[Math.floor(Math.random() * phase.recommendations.length)];
   document.getElementById("modal-recommendation").textContent = randomRecommendation;
 
+  // Load existing note
   const dateKey = date.toDateString();
   const existingNote = appState.dayNotes[dateKey] || "";
   document.getElementById("modal-note-input").value = existingNote;
 
   appState.selectedDay = date;
   modal.classList.remove("hidden");
-
-  const sendButtonInModal = document.getElementById("send-to-telegram-btn-modal");
-  if (!sendButtonInModal) {
-    const sendButton = document.createElement("button");
-    sendButton.id = "send-to-telegram-btn-modal";
-    sendButton.textContent = "";
-    sendButton.style.marginTop = "1rem";
-    sendButton.style.padding = "25px";
-    sendButton.style.backgroundColor = "#e8b4cb00";
-    sendButton.style.color = "white";
-    sendButton.style.border = "none";
-    sendButton.style.borderRadius = "50%";
-    sendButton.style.cursor = "pointer";
-    sendButton.style.fontWeight = "500";
-    sendButton.style.backgroundImage = "url('tg.png')";
-    sendButton.style.backgroundSize = "60%";
-    sendButton.style.backgroundRepeat = "no-repeat";
-    sendButton.style.backgroundPosition = "center";
-
-    sendButton.addEventListener("click", function() {
-      sendRecommendationToTelegram(
-        document.getElementById("modal-recommendation").textContent,
-        phase.name,
-        cycleDay
-      );
-    });
-
-    const modalContent = document.querySelector(".modal-content");
-    if (modalContent) {
-      const closeButton = document.getElementById("close-modal");
-      if (closeButton && closeButton.parentNode) {
-        closeButton.parentNode.insertBefore(sendButton, closeButton);
-      } else {
-        modalContent.appendChild(sendButton);
-      }
-    }
-  }
 }
 
 function closeModal() {
@@ -635,6 +614,7 @@ function saveDayNote() {
   // 🔥 Сразу сохраняем в облако
   saveUserDataToServer();
 
+  // Refresh diary if it's the current tab
   if (appState.currentTab === "diary") {
     updateDiaryView();
   }
@@ -645,33 +625,37 @@ function updateDiaryView() {
   const diaryEntries = document.getElementById("diary-entries");
   diaryEntries.innerHTML = "";
 
+  // Combine mood entries and day notes
   const allEntries = [];
 
+  // Add mood entries
   Object.values(appState.moodEntries).forEach((entry) => {
     allEntries.push({
       date: new Date(entry.date),
       type: "mood",
-      payload: entry,
+       entry,
     });
   });
 
+  // Add day notes
   Object.entries(appState.dayNotes).forEach(([dateStr, note]) => {
     allEntries.push({
       date: new Date(dateStr),
       type: "note",
-      payload: { note, date: dateStr },
+       { note, date: dateStr },
     });
   });
 
+  // Sort by date (newest first)
   allEntries.sort((a, b) => b.date - a.date);
 
   if (allEntries.length === 0) {
     diaryEntries.innerHTML = `
-      <div style="text-align: center; color: #8B7B8B; padding: 2rem;">
-        <p>Ваше прекрасное путешествие начинается здесь...</p>
-        <p style="font-size: 0.9rem; margin-top: 0.5rem;">Добавляйте настроения и заметки, чтобы видеть их в своем дневнике</p>
-      </div>
-    `;
+            <div style="text-align: center; color: #8B7B8B; padding: 2rem;">
+                <p>Ваше прекрасное путешествие начинается здесь...</p>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem;">Добавляйте настроения и заметки, чтобы видеть их в своем дневнике</p>
+            </div>
+        `;
     return;
   }
 
@@ -688,15 +672,15 @@ function updateDiaryView() {
 
     if (entry.type === "mood") {
       entryElement.innerHTML = `
-        <div class="diary-entry-date">${dateStr} - День ${entry.payload.cycleDay}</div>
-        <div class="diary-entry-mood">${moodEmojis[entry.payload.mood]}</div>
-        ${entry.payload.note ? `<div class="diary-entry-note">${entry.payload.note}</div>` : ""}
-      `;
+                <div class="diary-entry-date">${dateStr} - Day ${entry.data.cycleDay}</div>
+                <div class="diary-entry-mood">${moodEmojis[entry.data.mood]}</div>
+                ${entry.data.note ? `<div class="diary-entry-note">${entry.data.note}</div>` : ""}
+            `;
     } else {
       entryElement.innerHTML = `
-        <div class="diary-entry-date">${dateStr}</div>
-        <div class="diary-entry-note">${entry.payload.note}</div>
-      `;
+                <div class="diary-entry-date">${dateStr}</div>
+                <div class="diary-entry-note">${entry.data.note}</div>
+            `;
     }
 
     diaryEntries.appendChild(entryElement);
@@ -714,6 +698,7 @@ function checkForNotifications() {
     showNotification("Месячные могут начаться завтра. Подготовьте свое уютное пространство и любимые предметы комфорта. 🌸");
   }
 
+  // Show phase-specific gentle reminders
   const currentPhase = getPhaseForDay(currentDay);
   if (currentDay === 1) {
     setTimeout(() => {
@@ -729,7 +714,7 @@ function checkForNotifications() {
     }, 3000);
   } else if (currentDay === 17) {
     setTimeout(() => {
-      showNotification("Пришло время обратиться внутрь себя. Сейчас твоя мудрость глубочайшая. 🌙");
+      showNotification("Пришло время обратиться внутрь себя. Ваша мудрость глубочайшая. 🌙");
     }, 3000);
   }
 
@@ -749,6 +734,7 @@ function showNotification(message) {
   const notification = document.getElementById("notification");
   document.getElementById("notification-text").textContent = message;
   notification.classList.remove("hidden");
+
   setTimeout(() => {
     notification.classList.add("hidden");
   }, 5000);
@@ -761,7 +747,7 @@ function saveAppState() {
     JSON.stringify({
       ...appState,
       lastPeriodDate: appState.lastPeriodDate ? appState.lastPeriodDate.toISOString() : null,
-    })
+    }),
   );
 }
 
@@ -810,4 +796,38 @@ function exportUserData() {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+// 🆕 Диалог выбора начала нового цикла
+function openNewCycleDialog() {
+  const choice = confirm("Новый цикл начался?\n\nOK — Да, начался сегодня.\nОтмена — Выбрать дату.");
+
+  if (choice) {
+    // Начался сегодня
+    const today = new Date();
+    appState.lastPeriodDate = today;
+    saveAppState();
+    saveUserDataToServer();
+    updateTodayView();
+    generateCalendar();
+    updateDiaryView();
+    showNotification("Новый цикл установлен на сегодня!");
+  } else {
+    // Выбрать дату
+    const inputDate = prompt("Введите дату начала нового цикла (ГГГГ-ММ-ДД):", new Date().toISOString().split('T')[0]);
+    if (inputDate) {
+      const newDate = new Date(inputDate);
+      if (isNaN(newDate.getTime())) {
+        alert("Неверный формат даты.");
+        return;
+      }
+      appState.lastPeriodDate = newDate;
+      saveAppState();
+      saveUserDataToServer();
+      updateTodayView();
+      generateCalendar();
+      updateDiaryView();
+      showNotification("Дата начала цикла обновлена!");
+    }
+  }
 }
