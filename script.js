@@ -793,22 +793,8 @@ function generateCalendar() {
     dayElement.textContent = day;
 
     const dayDate = new Date(currentYear, currentMonth, day);
-    const cycleDay = getDayOfCycle(dayDate);
-    let phase;
-
-    // 🆕 Обрабатываем дни до начала цикла
-    if (cycleDay === null) {
-      // День до начала цикла
-      phase = {
-        name: "pre-cycle",
-        color: "#cccccc", // Серый цвет
-        recommendations: ["День до начала отсчета цикла."],
-        activities: [],
-        icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" fill="#cccccc"/></svg>`
-      };
-    } else {
-      phase = getPhaseForDay(cycleDay);
-    }
+    const cycleDay = getDayOfCycle(dayDate); // Всегда считаем день цикла
+    const phase = getPhaseForDay(cycleDay);
 
     // Apply phase color
     dayElement.style.backgroundColor = phase.color;
@@ -819,16 +805,16 @@ function generateCalendar() {
       dayElement.classList.add("current");
     }
 
-    // Add click handler
-    dayElement.addEventListener("click", () => {
-      // 🆕 Не открываем модалку для дней до начала цикла
-      if (cycleDay !== null) {
-        openDayModal(dayDate, cycleDay, phase);
-      } else {
-        console.log("День до начала цикла, модалка не открывается");
-        // Опционально: показать уведомление
-      }
-    });
+    // 🆕 Добавляем click handler ТОЛЬКО для дней >= lastPeriodDate
+    // Это предотвращает открытие модального окна для "прошлых" дней
+    if (appState.lastPeriodDate && dayDate >= appState.lastPeriodDate) {
+      dayElement.addEventListener("click", () => openDayModal(dayDate, cycleDay, phase));
+    } else {
+      // Опционально: визуальный признак, что день "недоступен для редактирования"
+      dayElement.style.cursor = "default"; // Не "pointer"
+      dayElement.style.opacity = "0.8";
+      // Цвет фазы и номер дня остаются, как и были рассчитаны
+    }
 
     calendarGrid.appendChild(dayElement);
   }
