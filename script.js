@@ -440,19 +440,21 @@ function saveDailyMood() {
   }
 
   const today = new Date().toDateString();
-  appState.moodEntries[today] = {
+  const moodEntry = {
     mood: selectedMood.dataset.mood,
     date: today,
     cycleDay: getCurrentCycleDay(),
   };
+  
+  appState.moodEntries[today] = moodEntry;
 
   saveAppState();
 
-  // ✅ ИСПРАВЛЕНО: ключ `` и двоеточие на месте
+  // ✅ ИСПРАВЛЕНО: правильный синтаксис объекта
   const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString() || "anonymous";
   saveUserDataToServer({
     type: "mood",
-     appState.moodEntries[today],
+    data: moodEntry,
     userId: userId,
     timestamp: new Date().toISOString(),
   });
@@ -602,11 +604,12 @@ function saveDayNote() {
   saveAppState();
   closeModal();
 
-  // ✅ ИСПРАВЛЕНО: ключ `` и двоеточие на месте
+  // ✅ ИСПРАВЛЕНО: правильный синтаксис объекта
   const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString() || "anonymous";
+  const noteData = { note: note, date: dateKey };
   saveUserDataToServer({
     type: "note",
-     { note: note, date: dateKey },
+    data: noteData,
     userId: userId,
     timestamp: new Date().toISOString(),
   });
@@ -616,7 +619,7 @@ function saveDayNote() {
   }
 }
 
-// Diary View — ✅ ВСЁ КОРРЕКТНО
+// Diary View
 function updateDiaryView() {
   const diaryEntries = document.getElementById("diary-entries");
   diaryEntries.innerHTML = "";
@@ -627,7 +630,7 @@ function updateDiaryView() {
     allEntries.push({
       date: new Date(entry.date),
       type: "mood",
-       entry,
+      data: entry,
     });
   });
 
@@ -635,7 +638,7 @@ function updateDiaryView() {
     allEntries.push({
       date: new Date(dateStr),
       type: "note",
-       { note, date: dateStr },
+      data: { note: note, date: dateStr },
     });
   });
 
