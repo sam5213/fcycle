@@ -836,3 +836,135 @@ body {
   background: linear-gradient(135deg, #f8f0f8 0%, #f0e8f0 100%);
   border: 2px solid #d4a5c2;
 }
+
+/* --- НОВОЕ МОДАЛЬНОЕ ОКНО "Новый цикл" --- */
+
+#new-cycle-modal {
+  z-index: 1001; /* Выше, чем у day-modal */
+}
+
+#new-cycle-modal .modal-content {
+  max-width: 350px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+#new-cycle-modal .modal-header {
+  background: linear-gradient(135deg, #f8f0f8 0%, #f0e8f0 100%);
+  border-bottom: 1px solid #e8d5e8;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+#new-cycle-modal .modal-header h3 {
+  margin: 0;
+  color: #6b5b73;
+  font-weight: normal;
+  font-size: 1.4rem;
+}
+
+#new-cycle-modal .modal-body {
+  padding: 1.5rem;
+}
+
+.modal-description {
+  color: #8b7b8b;
+  font-size: 0.95rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.new-cycle-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.or-separator {
+  text-align: center;
+  position: relative;
+  color: #b8a8b8;
+  font-size: 0.9rem;
+}
+
+.or-separator::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #e8d5e8;
+  z-index: 1;
+}
+
+.or-separator span {
+  background: white;
+  position: relative;
+  z-index: 2;
+  padding: 0 10px;
+}
+
+.custom-date-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.custom-date-picker label {
+  font-size: 0.9rem;
+  color: #6b5b73;
+  font-weight: 500;
+}
+
+#new-cycle-date-input {
+  padding: 0.75rem;
+  border: 2px solid #e8d5e8;
+  border-radius: 12px;
+  font-size: 1rem;
+  background: #fefcfe;
+  color: #6b5b73;
+  transition: all 0.3s ease;
+}
+
+#new-cycle-date-input:focus {
+  outline: none;
+  border-color: #d4a5c2;
+  box-shadow: 0 0 0 3px rgba(212, 165, 194, 0.1);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.secondary-outline {
+  background: transparent;
+  border: 2px solid #b8e6b8;
+  color: #4a7c59;
+}
+
+.secondary-outline:hover {
+  background: #f0fff0;
+}
+
+
+/* Адаптивность */
+@media (max-width: 350px) {
+  .modal-actions {
+    flex-direction: column;
+  }
+}
