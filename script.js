@@ -2,7 +2,9 @@
 let appState = {
   isSetup: false,
   lastPeriodDate: null,
-  cycleLength: 28,
+  previousLastPeriodDate: null, // Для хранения предыдущей даты
+  cycleHistory: [],              // 🆕 История циклов
+  cycleLength: 28,               // По умолчанию или средняя
   currentTab: "today",
   selectedDay: null,
   moodEntries: {},
@@ -237,25 +239,23 @@ function initializeEventListeners() {
   }
 
   // --- Обработчики событий для нового модального окна "Новый цикл" ---
-  // Открытие модального окна (если плавающая кнопка осталась от предыдущего решения)
-  // или вызывайте openNewCycleDialog() напрямую из нужного места
-  // Например, из кнопки в интерфейсе.
-
-  // Обработчики кнопок внутри модального окна
   document.getElementById("close-new-cycle-modal")?.addEventListener("click", closeNewCycleModal);
   document.getElementById("cancel-new-cycle-btn")?.addEventListener("click", closeNewCycleModal);
   document.getElementById("new-cycle-today-btn")?.addEventListener("click", handleNewCycleToday);
   document.getElementById("confirm-new-cycle-btn")?.addEventListener("click", handleConfirmNewCycleDate);
 
-  // Закрытие модального окна по клику вне его области
   document.getElementById("new-cycle-modal")?.addEventListener("click", (e) => {
     if (e.target.id === "new-cycle-modal") {
       closeNewCycleModal();
     }
   });
 
-  // Закрытие модального окна по клавише Escape
-  // (Обработчик для Escape уже выше, добавлено условие)
+  document.addEventListener("keydown", (e) => {
+    const modal = document.getElementById("new-cycle-modal");
+    if (e.key === "Escape" && modal && !modal.classList.contains("hidden")) {
+      closeNewCycleModal();
+    }
+  });
 }
 
 // 🆕 Функция для отправки рекомендации через fetch (как в работающем сервере)
@@ -308,9 +308,13 @@ function setupApp() {
     return;
   }
 
-  appState.lastPeriodDate = new Date(lastPeriodInput.value);
+  const initialDate = new Date(lastPeriodInput.value);
+  appState.lastPeriodDate = initialDate;
   appState.cycleLength = Number.parseInt(cycleLengthSelect.value);
   appState.isSetup = true;
+
+  // 🆕 Добавляем первый цикл в историю
+  addCycleToHistory(initialDate);
 
   saveAppState();
   showMainApp();
@@ -370,6 +374,137 @@ function switchTab(tabName) {
   }
 }
 
+// 🆕 Cycle History Management
+
+// 🆕 Добавление нового цикла в историю
+function addCycleToHistory(startDate) {
+  console.log("Добавляем цикл в историю. Новая дата:", startDate.toISOString().split('T')[0]);
+  
+  // 1. Проверяем, есть ли уже установленная дата начала цикла
+  if (!appState.lastPeriodDate) {
+    console.log("Первый цикл. Просто добавляем.");
+    // Если это первый цикл, просто добавляем его
+    const newCycle = {
+      startDate: startDate.toISOString(),
+      endDate: null,
+      length: null
+    };
+    appState.cycleHistory.push(newCycle);
+    
+    // Ограничиваем историю
+    if (appState.cycleHistory.length > 6) {
+      appState.cycleHistory.shift();
+    }
+    
+    console.log("Первый цикл добавлен в историю:", appState.cycleHistory);
+    return;
+  }
+
+  // 2. Рассчитываем разницу в днях между новой и предыдущей датой
+  const previousStartDate = appState.lastPeriodDate;
+  const diffTime = startDate - previousStartDate;
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  console.log(`Разница между ${previousStartDate.toISOString().split('T')[0]} и ${startDate.toISOString().split('T')[0]}: ${diffDays} дней`);
+
+  // 3. Если разница меньше 7 дней, считаем предыдущую дату ошибочной
+  if (diffDays > 0 && diffDays < 7) {
+    console.log(`Разница ${diffDays} дней < 7. Предыдущая дата (${previousStartDate.toISOString().split('T')[0]}) считается ошибочной.`);
+    
+    // a. Удаляем последний "ошибочный" цикл из истории (если он был добавлен)
+    if (appState.cycleHistory.length > 0) {
+      const lastCycle = appState.cycleHistory[appState.cycleHistory.length - 1];
+      if (new Date(lastCycle.startDate).getTime() === previousStartDate.getTime()) {
+        console.log("Удаляем ошибочный цикл из истории.");
+        appState.cycleHistory.pop();
+      }
+    }
+    
+    // b. Добавляем новый корректный цикл
+    const correctedCycle = {
+      startDate: startDate.toISOString(),
+      endDate: null,
+      length: null
+    };
+    appState.cycleHistory.push(correctedCycle);
+    
+    // Ограничиваем историю
+    if (appState.cycleHistory.length > 6) {
+      appState.cycleHistory.shift();
+    }
+    
+    console.log("История циклов обновлена (ошибка исправлена):", appState.cycleHistory);
+    return;
+  }
+
+  // 4. Если разница 7 или более дней (или отрицательная/ноль - новая дата раньше или та же)
+  if (diffDays >= 7) {
+    console.log(`Разница ${diffDays} дней >= 7. Это новый цикл.`);
+    
+    // a. Обновляем endDate и length предыдущего цикла в истории
+    if (appState.cycleHistory.length > 0) {
+      const lastCycleIndex = appState.cycleHistory.length - 1;
+      const lastCycle = appState.cycleHistory[lastCycleIndex];
+      
+      // Проверяем, что это именно предыдущий цикл, который мы завершаем
+      if (new Date(lastCycle.startDate).getTime() === previousStartDate.getTime()) {
+        lastCycle.endDate = startDate.toISOString();
+        lastCycle.length = diffDays;
+        console.log(`Предыдущий цикл завершен. Длина: ${diffDays} дней.`);
+      } else {
+        console.warn("Предупреждение: Не совпадает дата начала предыдущего цикла при завершении.");
+      }
+    }
+    
+    // b. Добавляем новый цикл
+    const newCycle = {
+      startDate: startDate.toISOString(),
+      endDate: null,
+      length: null
+    };
+    appState.cycleHistory.push(newCycle);
+    
+    // Ограничиваем историю
+    if (appState.cycleHistory.length > 6) {
+      appState.cycleHistory.shift();
+    }
+    
+    console.log("История циклов обновлена (новый цикл):", appState.cycleHistory);
+    return;
+  }
+
+  // 5. Если diffDays <= 0 (новая дата раньше или равна предыдущей)
+  if (diffDays <= 0) {
+    console.warn("Новая дата начала цикла должна быть позже предыдущей.");
+    // Можно показать уведомление пользователю
+    // alert("Новая дата начала цикла должна быть позже предыдущей.");
+    return;
+  }
+}
+
+// 🆕 Расчет средней длины цикла на основе истории
+function calculateAverageCycleLength() {
+  if (appState.cycleHistory.length < 2) {
+    console.log("Недостаточно данных для расчета средней длины цикла.");
+    return appState.cycleLength; // Возвращаем текущую, если данных мало
+  }
+
+  // Берем только циклы с известной длиной (исключаем последний незавершенный)
+  const completedCycles = appState.cycleHistory.filter(cycle => cycle.length !== null);
+
+  if (completedCycles.length === 0) {
+    console.log("Нет завершенных циклов для расчета.");
+    return appState.cycleLength;
+  }
+
+  const totalLength = completedCycles.reduce((sum, cycle) => sum + cycle.length, 0);
+  const averageLength = Math.round(totalLength / completedCycles.length);
+
+  console.log(`Средняя длина цикла рассчитана: ${averageLength} дней (на основе ${completedCycles.length} циклов)`);
+  return averageLength;
+}
+
+
 // Cycle Calculations
 function getCurrentCycleDay() {
   if (!appState.lastPeriodDate) return 1;
@@ -390,8 +525,14 @@ function getPhaseForDay(day) {
   return phases.menstruation; // Default fallback
 }
 
+// 🆕 Исправленная функция: возвращает null для дней до начала цикла
 function getDayOfCycle(date) {
   if (!appState.lastPeriodDate) return 1;
+
+  // Если дата раньше даты начала последнего цикла, возвращаем null
+  if (date < appState.lastPeriodDate) {
+    return null; // Или 0, или специальный маркер
+  }
 
   const diffTime = date - appState.lastPeriodDate;
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -465,10 +606,12 @@ function updateTodayView() {
     sendButton.textContent = "";
     sendButton.style.padding = "25px";
     sendButton.style.backgroundColor = "#e8b4cb00";
-    sendButton.style.color = "#ffffffdb";
+    sendButton.style.color = "white";
     sendButton.style.border = "none";
     sendButton.style.borderRadius = "50%";
     sendButton.style.cursor = "pointer";
+    sendButton.style.fontSize = "0.9rem";
+    sendButton.style.fontWeight = "500";
     sendButton.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
     sendButton.style.transition = "all 0.2s ease";
     sendButton.style.backgroundImage = "url('tg.png')";
@@ -651,9 +794,23 @@ function generateCalendar() {
 
     const dayDate = new Date(currentYear, currentMonth, day);
     const cycleDay = getDayOfCycle(dayDate);
-    const phase = getPhaseForDay(cycleDay);
+    let phase;
 
-  // Apply phase color
+    // 🆕 Обрабатываем дни до начала цикла
+    if (cycleDay === null) {
+      // День до начала цикла
+      phase = {
+        name: "pre-cycle",
+        color: "#cccccc", // Серый цвет
+        recommendations: ["День до начала отсчета цикла."],
+        activities: [],
+        icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" fill="#cccccc"/></svg>`
+      };
+    } else {
+      phase = getPhaseForDay(cycleDay);
+    }
+
+    // Apply phase color
     dayElement.style.backgroundColor = phase.color;
     dayElement.style.color = "white";
 
@@ -663,7 +820,15 @@ function generateCalendar() {
     }
 
     // Add click handler
-    dayElement.addEventListener("click", () => openDayModal(dayDate, cycleDay, phase));
+    dayElement.addEventListener("click", () => {
+      // 🆕 Не открываем модалку для дней до начала цикла
+      if (cycleDay !== null) {
+        openDayModal(dayDate, cycleDay, phase);
+      } else {
+        console.log("День до начала цикла, модалка не открывается");
+        // Опционально: показать уведомление
+      }
+    });
 
     calendarGrid.appendChild(dayElement);
   }
@@ -708,8 +873,8 @@ function openDayModal(date, cycleDay, phase) {
     sendButton.style.border = "none";
     sendButton.style.borderRadius = "50%";
     sendButton.style.cursor = "pointer";
-    // sendButton.style.fontSize = "0.9rem";
-    // sendButton.style.width = "100%";
+    sendButton.style.fontSize = "0.9rem";
+    sendButton.style.width = "100%";
     sendButton.style.fontWeight = "500";
     sendButton.style.backgroundImage = "url('tg.png')";
     sendButton.style.backgroundSize = "60%"; // Размер иконки
@@ -898,6 +1063,8 @@ function saveAppState() {
     JSON.stringify({
       ...appState,
       lastPeriodDate: appState.lastPeriodDate ? appState.lastPeriodDate.toISOString() : null,
+      previousLastPeriodDate: appState.previousLastPeriodDate ? appState.previousLastPeriodDate.toISOString() : null,
+      // cycleHistory сохранится автоматически как массив объектов
     }),
   );
 }
@@ -910,6 +1077,8 @@ function loadAppState() {
       ...appState,
       ...parsed,
       lastPeriodDate: parsed.lastPeriodDate ? new Date(parsed.lastPeriodDate) : null,
+      previousLastPeriodDate: parsed.previousLastPeriodDate ? new Date(parsed.previousLastPeriodDate) : null,
+      // cycleHistory: parsed.cycleHistory || [] // Восстановится как массив
     };
   }
 }
@@ -931,6 +1100,7 @@ function exportUserData() {
     cycleData: {
       lastPeriodDate: appState.lastPeriodDate,
       cycleLength: appState.cycleLength,
+      cycleHistory: appState.cycleHistory, // 🆕 Экспортируем историю
     },
     moodEntries: appState.moodEntries,
     dayNotes: appState.dayNotes,
@@ -974,7 +1144,23 @@ function closeNewCycleModal() {
 // 🆕 Обработчик события: "Начался сегодня"
 function handleNewCycleToday() {
   const today = new Date();
+  
+  // 1. Сохраняем текущую дату как предыдущую
+  appState.previousLastPeriodDate = appState.lastPeriodDate;
+  
+  // 2. Добавляем текущий цикл в историю
+  addCycleToHistory(today);
+  
+  // 3. Устанавливаем сегодня как начало нового цикла
   appState.lastPeriodDate = today;
+  
+  // 4. Рассчитываем новую среднюю длину
+  const newAverageLength = calculateAverageCycleLength();
+  if (newAverageLength !== appState.cycleLength) {
+    appState.cycleLength = newAverageLength;
+    showNotification(`Средняя длина цикла обновлена: ${newAverageLength} дней`);
+  }
+  
   finalizeNewCycle();
 }
 
@@ -993,8 +1179,23 @@ function handleConfirmNewCycleDate() {
     alert("Неверный формат даты.");
     return;
   }
-
+  
+  // 1. Сохраняем текущую дату как предыдущую
+  appState.previousLastPeriodDate = appState.lastPeriodDate;
+  
+  // 2. Добавляем новый цикл в историю
+  addCycleToHistory(newDate);
+  
+  // 3. Обновляем lastPeriodDate
   appState.lastPeriodDate = newDate;
+  
+  // 4. Рассчитываем новую среднюю длину
+  const newAverageLength = calculateAverageCycleLength();
+  if (newAverageLength !== appState.cycleLength) {
+    appState.cycleLength = newAverageLength;
+    showNotification(`Средняя длина цикла обновлена: ${newAverageLength} дней`);
+  }
+  
   finalizeNewCycle();
 }
 
