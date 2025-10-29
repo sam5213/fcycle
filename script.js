@@ -472,7 +472,8 @@ function selectMood(mood) {
 
 function saveDailyMood() {
   const selectedMood = document.querySelector(".mood-btn.selected");
-  const note = document.getElementById("daily-note").value;
+  const noteElement = document.getElementById("daily-note");
+  const note = noteElement ? noteElement.value : "";
 
   if (!selectedMood) {
     alert("Пожалуйста, выберите, как вы себя чувствуете сегодня");
