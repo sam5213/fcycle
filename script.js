@@ -64,9 +64,11 @@ async function loadUserDataFromServer() {
 
     const data = await response.json();
     if (data.appState) {
+      // Объединяем данные: сначала загруженные, потом локальные (локальные приоритетнее)
       appState = { ...data.appState, ...appState };
-      saveAppState();
+      saveAppState(); // Сохраняем объединённое состояние локально
       console.log("✅ Данные пользователя загружены из облака");
+      // Перезагружаем интерфейс
       if (appState.isSetup) {
         updateTodayView();
         generateCalendar();
@@ -109,8 +111,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.body.style.opacity = "0";
   document.body.style.transition = "opacity 0.5s ease";
 
+  // 🔥 Загружаем данные из облака ПЕРЕД загрузкой локальных
   await loadUserDataFromServer();
-  loadAppState();
+  loadAppState(); // Загружаем локальные (они перезапишут, если были изменения)
+
   initializeEventListeners();
 
   if (appState.isSetup) {
@@ -146,13 +150,18 @@ function initializeEventListeners() {
   });
 
   document.addEventListener("keydown", (e) => {
+    // Close modal with Escape key
     if (e.key === "Escape") {
       const modal = document.getElementById("day-modal");
+      const newCycleModal = document.getElementById("new-cycle-modal");
       if (!modal.classList.contains("hidden")) {
         closeModal();
+      } else if (newCycleModal && !newCycleModal.classList.contains("hidden")) {
+        closeNewCycleModal();
       }
     }
 
+    // Tab navigation for mood buttons
     if (e.key === "Tab" && document.activeElement.classList.contains("mood-btn")) {
       e.preventDefault();
       const moodBtns = Array.from(document.querySelectorAll(".mood-btn"));
@@ -164,6 +173,7 @@ function initializeEventListeners() {
     }
   });
 
+  // Touch gesture support for mobile
   let touchStartX = 0;
   let touchStartY = 0;
 
@@ -181,13 +191,16 @@ function initializeEventListeners() {
     const diffX = touchStartX - touchEndX;
     const diffY = touchStartY - touchEndY;
 
+    // Only handle horizontal swipes that are significant
     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
       const tabs = ["today", "calendar", "diary"];
       const currentTabIndex = tabs.indexOf(appState.currentTab);
 
       if (diffX > 0 && currentTabIndex < tabs.length - 1) {
+        // Swipe left - next tab
         switchTab(tabs[currentTabIndex + 1]);
       } else if (diffX < 0 && currentTabIndex > 0) {
+        // Swipe right - previous tab
         switchTab(tabs[currentTabIndex - 1]);
       }
     }
@@ -196,7 +209,9 @@ function initializeEventListeners() {
     touchStartY = 0;
   });
 
+  // Settings menu (hidden feature - long press on Luna title)
   let longPressTimer = null;
+
   const title = document.querySelector(".welcome-content h1");
   if (title) {
     title.addEventListener("mousedown", startLongPress);
@@ -220,9 +235,30 @@ function initializeEventListeners() {
       longPressTimer = null;
     }
   }
+
+  // --- Обработчики событий для нового модального окна "Новый цикл" ---
+  // Открытие модального окна (если плавающая кнопка осталась от предыдущего решения)
+  // или вызывайте openNewCycleDialog() напрямую из нужного места
+  // Например, из кнопки в интерфейсе.
+
+  // Обработчики кнопок внутри модального окна
+  document.getElementById("close-new-cycle-modal")?.addEventListener("click", closeNewCycleModal);
+  document.getElementById("cancel-new-cycle-btn")?.addEventListener("click", closeNewCycleModal);
+  document.getElementById("new-cycle-today-btn")?.addEventListener("click", handleNewCycleToday);
+  document.getElementById("confirm-new-cycle-btn")?.addEventListener("click", handleConfirmNewCycleDate);
+
+  // Закрытие модального окна по клику вне его области
+  document.getElementById("new-cycle-modal")?.addEventListener("click", (e) => {
+    if (e.target.id === "new-cycle-modal") {
+      closeNewCycleModal();
+    }
+  });
+
+  // Закрытие модального окна по клавише Escape
+  // (Обработчик для Escape уже выше, добавлено условие)
 }
 
-// 🆕 Функция для отправки рекомендации через fetch
+// 🆕 Функция для отправки рекомендации через fetch (как в работающем сервере)
 function sendRecommendationToTelegram(recommendationText, phaseName, cycleDay) {
   try {
     const dataToSend = {
@@ -249,7 +285,6 @@ function sendRecommendationToTelegram(recommendationText, phaseName, cycleDay) {
       if (data.success) {
         showNotification("✨ Recommendation sent to your chat!");
       } else {
-        console.error('Server error:', data.error);
         showNotification("❌ Failed to send recommendation");
       }
     })
@@ -259,6 +294,7 @@ function sendRecommendationToTelegram(recommendationText, phaseName, cycleDay) {
     });
   } catch (error) {
     console.error("Error in sendRecommendationToTelegram:", error);
+    showNotification("❌ Error sending recommendation");
   }
 }
 
@@ -300,11 +336,13 @@ function showMainApp() {
 
 // Tab Management
 function switchTab(tabName) {
+  // Update navigation
   document.querySelectorAll(".nav-item").forEach((item) => {
     item.classList.remove("active");
   });
   document.querySelector(`[data-tab="${tabName}"]`).classList.add("active");
 
+  // Update content
   document.querySelectorAll(".tab-pane").forEach((pane) => {
     pane.classList.remove("active");
   });
@@ -400,6 +438,7 @@ function updateTodayView() {
   if (todayMood) {
     document.querySelector(`[data-mood="${todayMood.mood}"]`).classList.add("selected");
   } else {
+    // Clear previous selections
     document.querySelectorAll(".mood-btn").forEach((btn) => {
       btn.classList.remove("selected");
     });
@@ -410,6 +449,69 @@ function updateTodayView() {
   setTimeout(() => {
     recommendationCard.classList.remove("phase-transition");
   }, 2000);
+  
+  // Добавляем кнопку отправки рекомендации в чат (если её ещё нет)
+  const sendButtonContainer = document.getElementById("send-to-telegram-container");
+  if (!sendButtonContainer) {
+    // Создаем контейнер для кнопки
+    const container = document.createElement("div");
+    container.id = "send-to-telegram-container";
+    container.style.marginTop = "1rem";
+    container.style.textAlign = "center";
+    
+    // Создаем кнопку
+    const sendButton = document.createElement("button");
+    sendButton.id = "send-to-telegram-btn";
+    sendButton.textContent = "";
+    sendButton.style.padding = "25px";
+    sendButton.style.backgroundColor = "#e8b4cb00";
+    sendButton.style.color = "#ffffffdb";
+    sendButton.style.border = "none";
+    sendButton.style.borderRadius = "50%";
+    sendButton.style.cursor = "pointer";
+    sendButton.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+    sendButton.style.transition = "all 0.2s ease";
+    sendButton.style.backgroundImage = "url('tg.png')";
+    sendButton.style.backgroundSize = "70%"; // Размер иконки
+    sendButton.style.backgroundRepeat = "no-repeat";
+    sendButton.style.backgroundPosition = "center";
+    
+    // Добавляем hover эффект
+    sendButton.onmouseover = function() {
+      this.style.backgroundColor = "#d4a5c29c";
+      this.style.transform = "translateY(-1px)";
+      this.style.boxShadow = "0 3px 6px rgba(0,0,0,0.15)";
+    };
+    
+    sendButton.onmouseout = function() {
+      this.style.backgroundColor = "#d4a5c270";
+      this.style.transform = "translateY(0)";
+      this.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+    };
+    
+    // Добавляем обработчик клика
+    sendButton.addEventListener("click", function() {
+      sendRecommendationToTelegram(
+        document.getElementById("recommendation-text").textContent,
+        currentPhase.name,
+        currentDay
+      );
+    });
+    
+    container.appendChild(sendButton);
+    
+    // Находим карточку рекомендаций и добавляем кнопку после неё
+    const recommendationSection = document.querySelector(".recommendation-section");
+    if (recommendationSection) {
+      recommendationSection.appendChild(container);
+    } else {
+      // Если нет специальной секции, добавляем после recommendation-card
+      const recCard = document.getElementById("recommendation-card");
+      if (recCard && recCard.parentNode) {
+        recCard.parentNode.appendChild(container);
+      }
+    }
+  }
 
   // 🆕 Добавляем плавающую кнопку "Новый цикл?" (если её ещё нет)
   const existingFloatBtn = document.getElementById("float-new-cycle-btn");
@@ -472,8 +574,9 @@ function selectMood(mood) {
 
 function saveDailyMood() {
   const selectedMood = document.querySelector(".mood-btn.selected");
+  // ✅ Безопасное получение значения note
   const noteElement = document.getElementById("daily-note");
-  const note = noteElement ? noteElement.value : "";
+  const note = noteElement ? noteElement.value : ""; // Если элемента нет — пустая строка
 
   if (!selectedMood) {
     alert("Пожалуйста, выберите, как вы себя чувствуете сегодня");
@@ -550,7 +653,7 @@ function generateCalendar() {
     const cycleDay = getDayOfCycle(dayDate);
     const phase = getPhaseForDay(cycleDay);
 
-    // Apply phase color
+  // Apply phase color
     dayElement.style.backgroundColor = phase.color;
     dayElement.style.color = "white";
 
@@ -590,6 +693,53 @@ function openDayModal(date, cycleDay, phase) {
 
   appState.selectedDay = date;
   modal.classList.remove("hidden");
+  
+  // Добавляем кнопку отправки в модальное окно (если её ещё нет)
+  const sendButtonInModal = document.getElementById("send-to-telegram-btn-modal");
+  if (!sendButtonInModal) {
+    // Создаем кнопку отправки
+    const sendButton = document.createElement("button");
+    sendButton.id = "send-to-telegram-btn-modal";
+    sendButton.textContent = "";
+    sendButton.style.marginTop = "1rem";
+    sendButton.style.padding = "25px";
+    sendButton.style.backgroundColor = "#e8b4cb00";
+    sendButton.style.color = "white";
+    sendButton.style.border = "none";
+    sendButton.style.borderRadius = "50%";
+    sendButton.style.cursor = "pointer";
+    // sendButton.style.fontSize = "0.9rem";
+    // sendButton.style.width = "100%";
+    sendButton.style.fontWeight = "500";
+    sendButton.style.backgroundImage = "url('tg.png')";
+    sendButton.style.backgroundSize = "60%"; // Размер иконки
+    sendButton.style.backgroundRepeat = "no-repeat";
+    sendButton.style.backgroundPosition = "center";
+    
+    // Добавляем обработчик клика
+    sendButton.addEventListener("click", function() {
+      sendRecommendationToTelegram(
+        document.getElementById("modal-recommendation").textContent,
+        phase.name,
+        cycleDay
+      );
+    });
+    
+    // Находим контейнер модального окна и добавляем кнопку перед закрывающим элементом
+    const modalContent = document.querySelector(".modal-content");
+    if (modalContent) {
+      // Проверяем, есть ли уже кнопка
+      if (!modalContent.querySelector("#send-to-telegram-btn-modal")) {
+        // Ищем последний элемент перед закрывающим крестиком
+        const closeButton = document.getElementById("close-modal");
+        if (closeButton && closeButton.parentNode) {
+          closeButton.parentNode.insertBefore(sendButton, closeButton);
+        } else {
+          modalContent.appendChild(sendButton);
+        }
+      }
+    }
+  }
 }
 
 function closeModal() {
@@ -715,7 +865,7 @@ function checkForNotifications() {
     }, 3000);
   } else if (currentDay === 17) {
     setTimeout(() => {
-      showNotification("Пришло время обратиться внутрь себя. Ваша мудрость глубочайшая. 🌙");
+      showNotification("Пришло время обратиться внутрь себя. Сейчас твоя мудрость глубочайшая. 🌙");
     }, 3000);
   }
 
@@ -799,36 +949,62 @@ function exportUserData() {
   URL.revokeObjectURL(url);
 }
 
-// 🆕 Диалог выбора начала нового цикла
-function openNewCycleDialog() {
-  const choice = confirm("Новый цикл начался?\n\nOK — Да, начался сегодня.\nОтмена — Выбрать дату.");
+// 🆕 Функции для работы с кастомным модальным окном "Новый цикл"
 
-  if (choice) {
-    // Начался сегодня
-    const today = new Date();
-    appState.lastPeriodDate = today;
-    saveAppState();
-    saveUserDataToServer();
-    updateTodayView();
-    generateCalendar();
-    updateDiaryView();
-    showNotification("Новый цикл установлен на сегодня!");
-  } else {
-    // Выбрать дату
-    const inputDate = prompt("Введите дату начала нового цикла (ГГГГ-ММ-ДД):", new Date().toISOString().split('T')[0]);
-    if (inputDate) {
-      const newDate = new Date(inputDate);
-      if (isNaN(newDate.getTime())) {
-        alert("Неверный формат даты.");
-        return;
-      }
-      appState.lastPeriodDate = newDate;
-      saveAppState();
-      saveUserDataToServer();
-      updateTodayView();
-      generateCalendar();
-      updateDiaryView();
-      showNotification("Дата начала цикла обновлена!");
-    }
+// 🆕 Открытие кастомного модального окна "Новый цикл"
+function openNewCycleDialog() {
+  const modal = document.getElementById("new-cycle-modal");
+  const dateInput = document.getElementById("new-cycle-date-input");
+
+  // Устанавливаем текущую дату по умолчанию
+  const today = new Date().toISOString().split('T')[0];
+  dateInput.value = today;
+
+  modal.classList.remove("hidden");
+
+  // Фокус на поле даты для удобства
+  setTimeout(() => dateInput.focus(), 100);
+}
+
+// 🆕 Закрытие модального окна "Новый цикл"
+function closeNewCycleModal() {
+  document.getElementById("new-cycle-modal").classList.add("hidden");
+}
+
+// 🆕 Обработчик события: "Начался сегодня"
+function handleNewCycleToday() {
+  const today = new Date();
+  appState.lastPeriodDate = today;
+  finalizeNewCycle();
+}
+
+// 🆕 Обработчик события: Подтверждение выбранной даты
+function handleConfirmNewCycleDate() {
+  const dateInput = document.getElementById("new-cycle-date-input");
+  const newDateStr = dateInput.value;
+
+  if (!newDateStr) {
+    alert("Пожалуйста, выберите дату начала цикла.");
+    return;
   }
+
+  const newDate = new Date(newDateStr);
+  if (isNaN(newDate.getTime())) {
+    alert("Неверный формат даты.");
+    return;
+  }
+
+  appState.lastPeriodDate = newDate;
+  finalizeNewCycle();
+}
+
+// 🆕 Финализация установки новой даты
+function finalizeNewCycle() {
+  saveAppState();
+  saveUserDataToServer();
+  updateTodayView();
+  generateCalendar();
+  updateDiaryView();
+  closeNewCycleModal();
+  showNotification("Дата начала цикла обновлена!");
 }
