@@ -651,7 +651,7 @@ function updateDiaryView() {
     allEntries.push({
       date: new Date(entry.date),
       type: "mood",
-       entry,
+      payload: entry,
     });
   });
 
