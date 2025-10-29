@@ -690,7 +690,7 @@ function updateDiaryView() {
       entryElement.innerHTML = `
         <div class="diary-entry-date">${dateStr} - День ${entry.payload.cycleDay}</div>
         <div class="diary-entry-mood">${moodEmojis[entry.payload.mood]}</div>
-        ${entry.data.note ? `<div class="diary-entry-note">${entry.payload.note}</div>` : ""}
+        ${entry.payload.note ? `<div class="diary-entry-note">${entry.payload.note}</div>` : ""}
       `;
     } else {
       entryElement.innerHTML = `
