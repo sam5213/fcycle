@@ -48,21 +48,51 @@ async function loadRecommendationsFromGist() {
   }
 }
 
-// 🆕 Функция для отправки данных пользователя на сервер (анонимизированных)
-async function saveUserDataToServer(data) {
+// 🆕 Функция загрузки данных пользователя из Gist
+async function loadUserDataFromServer() {
+  const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString();
+  if (!userId) return;
+
   try {
-    const response = await fetch('https://fcycle-85.deno.dev/api/save', {
+    const response = await fetch('https://fcycle-85.deno.dev/api/load', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
     });
-    if (!response.ok) {
-      console.warn("Не удалось сохранить данные на сервере");
+
+    if (!response.ok) return;
+
+    const data = await response.json();
+    if (data.appState) {
+      // Объединяем данные: сначала локальные, потом загруженные (локальные приоритетнее)
+      appState = { ...data.appState, ...appState };
+      saveAppState(); // Сохраняем объединённое состояние локально
+      console.log("✅ Данные пользователя загружены из облака");
+      // Перезагружаем интерфейс
+      if (appState.isSetup) {
+        updateTodayView();
+        generateCalendar();
+        updateDiaryView();
+      }
     }
-  } catch (error) {
-    console.error("Ошибка при отправке данных пользователя на сервер:", error);
+  } catch (e) {
+    console.error("❌ Ошибка загрузки данных из облака:", e);
+  }
+}
+
+// 🆕 Функция сохранения данных пользователя в Gist
+async function saveUserDataToServer() {
+  const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString();
+  if (!userId) return;
+
+  try {
+    await fetch('https://fcycle-85.deno.dev/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, appState }),
+    });
+  } catch (e) {
+    console.error("❌ Ошибка сохранения данных в облако:", e);
   }
 }
 
@@ -81,7 +111,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.body.style.opacity = "0";
   document.body.style.transition = "opacity 0.5s ease";
 
-  loadAppState();
+  // 🔥 Загружаем данные из облака ПЕРЕД загрузкой локальных
+  await loadUserDataFromServer();
+  loadAppState(); // Загружаем локальные (они перезапишут, если были изменения)
+
   initializeEventListeners();
 
   if (appState.isSetup) {
@@ -251,6 +284,9 @@ function setupApp() {
   showMainApp();
   updateTodayView();
   checkForNotifications();
+
+  // 🔥 Сразу сохраняем в облако
+  saveUserDataToServer();
 }
 
 function showWelcomeScreen() {
@@ -440,24 +476,16 @@ function saveDailyMood() {
   }
 
   const today = new Date().toDateString();
-  const moodEntry = {
+  appState.moodEntries[today] = {
     mood: selectedMood.dataset.mood,
     date: today,
     cycleDay: getCurrentCycleDay(),
   };
-  
-  appState.moodEntries[today] = moodEntry;
 
   saveAppState();
 
-  // ✅ ИСПРАВЛЕНО: правильный синтаксис объекта
-  const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString() || "anonymous";
-  saveUserDataToServer({
-    type: "mood",
-    data: moodEntry,
-    userId: userId,
-    timestamp: new Date().toISOString(),
-  });
+  // 🔥 Сразу сохраняем в облако
+  saveUserDataToServer();
 
   const button = document.getElementById("save-mood");
   const originalText = button.textContent;
@@ -604,15 +632,8 @@ function saveDayNote() {
   saveAppState();
   closeModal();
 
-  // ✅ ИСПРАВЛЕНО: правильный синтаксис объекта
-  const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString() || "anonymous";
-  const noteData = { note: note, date: dateKey };
-  saveUserDataToServer({
-    type: "note",
-    data: noteData,
-    userId: userId,
-    timestamp: new Date().toISOString(),
-  });
+  // 🔥 Сразу сохраняем в облако
+  saveUserDataToServer();
 
   if (appState.currentTab === "diary") {
     updateDiaryView();
@@ -630,7 +651,7 @@ function updateDiaryView() {
     allEntries.push({
       date: new Date(entry.date),
       type: "mood",
-      data: entry,
+       entry,
     });
   });
 
@@ -638,7 +659,7 @@ function updateDiaryView() {
     allEntries.push({
       date: new Date(dateStr),
       type: "note",
-      data: { note: note, date: dateStr },
+       { note, date: dateStr },
     });
   });
 
