@@ -662,7 +662,7 @@ function updateTodayView() {
     const floatBtn = document.createElement("button");
     floatBtn.id = "float-new-cycle-btn";
     floatBtn.title = "Новый цикл?";
-    floatBtn.innerHTML = "🌙"; // Можно заменить на SVG-иконку
+    floatBtn.innerHTML = "🩸"; // Можно заменить на SVG-иконку
     floatBtn.style.position = "fixed";
     floatBtn.style.bottom = "100px"; // Выше кнопок навигации
     floatBtn.style.right = "20px";
@@ -874,7 +874,6 @@ function openDayModal(date, cycleDay, phase) {
     sendButton.style.borderRadius = "50%";
     sendButton.style.cursor = "pointer";
     sendButton.style.fontSize = "0.9rem";
-    sendButton.style.width = "100%";
     sendButton.style.fontWeight = "500";
     sendButton.style.backgroundImage = "url('tg.png')";
     sendButton.style.backgroundSize = "60%"; // Размер иконки
