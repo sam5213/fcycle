@@ -199,6 +199,35 @@
                 <p id="notification-text">Месячные могут начаться через 2 дня. Самое время быть особенно бережной к себе.</p>
             </div>
         </div>
+
+        <!-- Модальное окно для нового цикла -->
+        <div id="new-cycle-modal" class="modal hidden">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Новый цикл начался?</h3>
+              <button id="close-new-cycle-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+              <p class="modal-description">Уточните дату начала нового цикла, чтобы расчеты были точными.</p>
+              
+              <div class="new-cycle-options">
+                <button id="new-cycle-today-btn" class="primary-button full-width">Начался сегодня</button>
+                
+                <div class="or-separator">или</div>
+                
+                <div class="custom-date-picker">
+                  <label for="new-cycle-date-input">Выберите дату:</label>
+                  <input type="date" id="new-cycle-date-input" class="full-width">
+                </div>
+                
+                <div class="modal-actions">
+                  <button id="confirm-new-cycle-btn" class="secondary-button">Подтвердить</button>
+                  <button id="cancel-new-cycle-btn" class="secondary-button secondary-outline">Отмена</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
