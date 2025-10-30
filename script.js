@@ -1004,7 +1004,7 @@ function updateDiaryView() {
     allEntries.push({
       date: new Date(entry.date),
       type: "mood",
-       entry,
+      data: entry,
     });
   });
 
@@ -1013,7 +1013,7 @@ function updateDiaryView() {
     allEntries.push({
       date: new Date(dateStr),
       type: "note",
-       { note, date: dateStr },
+      data: { note, date: dateStr },
     });
   });
 
