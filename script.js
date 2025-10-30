@@ -975,7 +975,7 @@ function saveDayNote() {
   const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString() || "anonymous";
   saveUserDataToGist({
     type: "note",
-    data: { note: note, date: dateKey },
+    payload: { note: note, date: dateKey },
     userId: userId,
     timestamp: new Date().toISOString(),
   });
@@ -1004,7 +1004,7 @@ function updateDiaryView() {
     allEntries.push({
       date: new Date(entry.date),
       type: "mood",
-      data: entry,
+      payload: entry,
     });
   });
 
@@ -1013,7 +1013,7 @@ function updateDiaryView() {
     allEntries.push({
       date: new Date(dateStr),
       type: "note",
-      data: { note, date: dateStr },
+      payload: { note, date: dateStr },
     });
   });
 
