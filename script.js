@@ -975,7 +975,7 @@ function saveDayNote() {
   const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString() || "anonymous";
   saveUserDataToGist({
     type: "note",
-     { note: note, date: dateKey },
+    data: { note: note, date: dateKey },
     userId: userId,
     timestamp: new Date().toISOString(),
   });
