@@ -3,6 +3,7 @@ let appState = {
   isSetup: false,
   lastPeriodDate: null,
   previousLastPeriodDate: null, // Для хранения предыдущей даты
+  viewedMonthOffset: 0, // 🆕 Смещение месяца для отображения в календаре (0 — текущий)
   // --- История и прогноз циклов ---
   completedCycles: [],       // 🆕 Массив завершенных циклов [{ startDate: ISOString, endDate: ISOString, length: Number }, ...]
   currentCycle: null,        // 🆕 Объект текущего цикла { startDate: ISOString, predictedEndDate: ISOString, predictedLength: Number }
@@ -284,6 +285,15 @@ function initializeEventListeners() {
       closeNewCycleModal();
     }
   });
+
+  // 🆕 Добавляем обработчики событий для навигации по месяцам
+  document.getElementById("prev-month")?.addEventListener("click", () => {
+    generateCalendar(appState.viewedMonthOffset - 1);
+  });
+  
+  document.getElementById("next-month")?.addEventListener("click", () => {
+    generateCalendar(appState.viewedMonthOffset + 1);
+  });
 }
 
 // 🆕 Функция для отправки рекомендации через fetch (как в работающем сервере)
@@ -396,7 +406,7 @@ function switchTab(tabName) {
 
   // Refresh content based on tab
   if (tabName === "calendar") {
-    generateCalendar();
+    generateCalendar(appState.viewedMonthOffset);
   } else if (tabName === "diary") {
     updateDiaryView();
   } else if (tabName === "today") {
@@ -828,13 +838,23 @@ function saveDailyMood() {
 }
 
 // Calendar Generation
-function generateCalendar() {
+// 🆕 Обновлённая функция: генерирует календарь с учётом смещения месяца
+function generateCalendar(monthOffset = 0) {
   const calendarGrid = document.getElementById("calendar-grid");
   calendarGrid.innerHTML = "";
 
   const today = new Date();
-  const currentMonth = today.getMonth();
-  const currentYear = today.getFullYear();
+  // Вычисляем целевой месяц и год
+  const targetDate = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
+  const currentMonth = targetDate.getMonth();
+  const currentYear = targetDate.getFullYear();
+
+  // Обновляем заголовок календаря
+  const monthNames = [
+    "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+  ];
+  document.getElementById("calendar-month-year").textContent = `${monthNames[currentMonth]} ${currentYear}`;
 
   // Get first day of month and number of days
   const firstDay = new Date(currentYear, currentMonth, 1);
@@ -869,24 +889,47 @@ function generateCalendar() {
     dayElement.textContent = day;
 
     const dayDate = new Date(currentYear, currentMonth, day);
-    const cycleDay = getDayOfCycle(dayDate); // 🆕 Всегда возвращает число
-    const phase = getPhaseForDay(cycleDay);
+    const cycleDay = getDayOfCycle(dayDate); // Может быть null
+    let phase;
+
+    // 🆕 Обрабатываем дни до начала цикла
+    if (cycleDay === null) {
+      // День до начала цикла
+      phase = {
+        name: "pre-cycle",
+        color: "#cccccc", // Серый цвет
+        recommendations: ["День до начала отсчета цикла."],
+        activities: [],
+        icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" fill="#cccccc"/></svg>`
+      };
+    } else {
+      phase = getPhaseForDay(cycleDay);
+    }
 
     // Apply phase color
     dayElement.style.backgroundColor = phase.color;
     dayElement.style.color = "white";
 
     // Mark current day
-    if (day === today.getDate()) {
+    if (day === today.getDate() && monthOffset === 0) {
       dayElement.classList.add("current");
     }
 
-    // 🆕 Добавляем click handler для ВСЕХ дней
-    // (Ранее было условие dayDate >= appState.lastPeriodDate)
-    dayElement.addEventListener("click", () => openDayModal(dayDate, cycleDay, phase));
+    // 🆕 Добавляем click handler ТОЛЬКО для дней >= lastPeriodDate (т.е. cycleDay !== null и дата подходит)
+    if (cycleDay !== null && dayDate >= appState.lastPeriodDate) {
+      dayElement.addEventListener("click", () => openDayModal(dayDate, cycleDay, phase));
+    } else {
+      // Опционально: визуальный признак, что день "недоступен для редактирования"
+      dayElement.style.cursor = "default"; // Не "pointer"
+      dayElement.style.opacity = "0.8";
+    }
 
     calendarGrid.appendChild(dayElement);
   }
+
+  // 🆕 Обновляем состояние смещения месяца
+  appState.viewedMonthOffset = monthOffset;
+  saveAppState();
 }
 
 // Day Modal
@@ -1145,6 +1188,8 @@ function loadAppState() {
       ...parsed,
       lastPeriodDate: parsed.lastPeriodDate ? new Date(parsed.lastPeriodDate) : null,
       // completedCycles, currentCycle, nextPredictedCycle: parsed.XXX || []
+      // 🆕 Сбрасываем смещение при загрузке
+      viewedMonthOffset: 0,
     };
   }
 }
