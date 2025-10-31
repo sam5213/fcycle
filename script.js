@@ -780,7 +780,7 @@ function saveDailyMood() {
   const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString() || "anonymous";
   saveUserDataToGist({
     type: "mood",
-     entry,
+    payload: entry,
     userId: userId,
     timestamp: new Date().toISOString(),
   });
