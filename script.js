@@ -547,15 +547,36 @@ function getPhaseForDay(day) {
 function getDayOfCycle(date) {
   if (!appState.lastPeriodDate) return 1
 
-  // Если дата раньше даты начала последнего цикла, возвращаем null
+  // Если дата раньше даты начала последнего цикла
   if (date < appState.lastPeriodDate) {
-    return null // Или 0, или специальный маркер
-  }
+    // Пытаемся найти предыдущий цикл
+    if (appState.completedCycles && appState.completedCycles.length > 0) {
+      // Ищем последний завершённый цикл, который был до этой даты
+      const relevantCycle = [...appState.completedCycles]
+        .reverse()
+        .find(cycle => new Date(cycle.startDate) <= date);
 
-  const diffTime = date - appState.lastPeriodDate
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+      if (relevantCycle) {
+        const startDate = new Date(relevantCycle.startDate);
+        const diffTime = date - startDate;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        // Используем длину этого цикла для расчета
+        const cycleLength = relevantCycle.length || appState.defaultCycleLength;
+        return (diffDays % cycleLength) + 1;
+      }
+    }
+    
+    // Если предыдущего цикла нет, возвращаем "старый" расчет
+    const diffTime = date - new Date("1970-01-01T00:00:00Z"); // или любая другая "нулевая" дата
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return (diffDays % appState.defaultCycleLength) + 1;
+    }
 
-  return (diffDays % appState.cycleLength) + 1
+  // Если дата позже или равна lastPeriodDate, считаем как обычно
+  const diffTime = date - appState.lastPeriodDate;
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  return (diffDays % appState.cycleLength) + 1;
 }
 
 // Today View Updates
@@ -842,22 +863,8 @@ function generateCalendar() {
     dayElement.textContent = day;
 
     const dayDate = new Date(currentYear, currentMonth, day);
-    const cycleDay = getDayOfCycle(dayDate); // Может быть null
-    let phase;
-
-    // 🆕 Обрабатываем дни до начала цикла
-    if (cycleDay === null) {
-      // День до начала цикла
-      phase = {
-        name: "pre-cycle",
-        color: "#cccccc", // Серый цвет
-        recommendations: ["День до начала отсчета цикла."],
-        activities: [],
-        icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" fill="#cccccc"/></svg>`
-      };
-    } else {
-      phase = getPhaseForDay(cycleDay);
-    }
+    const cycleDay = getDayOfCycle(dayDate); // 🆕 Всегда возвращает число
+    const phase = getPhaseForDay(cycleDay);
 
     // Apply phase color
     dayElement.style.backgroundColor = phase.color;
@@ -868,14 +875,9 @@ function generateCalendar() {
       dayElement.classList.add("current");
     }
 
-    // 🆕 Добавляем click handler ТОЛЬКО для дней >= lastPeriodDate (т.е. cycleDay !== null и дата подходит)
-    if (cycleDay !== null && dayDate >= appState.lastPeriodDate) {
-      dayElement.addEventListener("click", () => openDayModal(dayDate, cycleDay, phase));
-    } else {
-      // Опционально: визуальный признак, что день "недоступен для редактирования"
-      dayElement.style.cursor = "default"; // Не "pointer"
-      dayElement.style.opacity = "0.8";
-    }
+    // 🆕 Добавляем click handler для ВСЕХ дней
+    // (Ранее было условие dayDate >= appState.lastPeriodDate)
+    dayElement.addEventListener("click", () => openDayModal(dayDate, cycleDay, phase));
 
     calendarGrid.appendChild(dayElement);
   }
