@@ -918,10 +918,14 @@ function generateCalendar(monthOffset = 0) {
     // 🆕 Добавляем click handler ТОЛЬКО для дней >= lastPeriodDate (т.е. cycleDay !== null и дата подходит)
     if (cycleDay !== null && dayDate >= appState.lastPeriodDate) {
       dayElement.addEventListener("click", () => openDayModal(dayDate, cycleDay, phase));
+    } else if (appState.nextPredictedCycle && dayDate >= new Date(appState.nextPredictedCycle.predictedStartDate)) {
+      // День прогнозируемого цикла — приглушённый
+      dayElement.style.cursor = "default";
+      dayElement.style.opacity = "0.4"; // Ещё более приглушён, чем прошлые
     } else {
       // Опционально: визуальный признак, что день "недоступен для редактирования"
       dayElement.style.cursor = "default"; // Не "pointer"
-      dayElement.style.opacity = "0.8";
+      dayElement.style.opacity = "0.6";
     }
 
     calendarGrid.appendChild(dayElement);
