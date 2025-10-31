@@ -336,7 +336,7 @@ function setupApp() {
     return
   }
 
-  const initialDate = new Date(lastPeriodInput.value);
+  const initialDate = new Date(lastPeriodInput.value + 'T00:00:00');
   appState.lastPeriodDate = initialDate;
   appState.cycleLength = Number.parseInt(cycleLengthSelect.value);
   appState.isSetup = true;
@@ -549,7 +549,6 @@ function getPhaseForDay(day) {
 
 // 🆕 Исправленная функция: возвращает null для дней до начала цикла
 function getDayOfCycle(date) {
-  console.log("appState.lastPeriodDate в getDayOfCycle:", appState.lastPeriodDate);
   if (!appState.lastPeriodDate) return 1
 
   // Если дата раньше даты начала последнего цикла
@@ -580,7 +579,6 @@ function getDayOfCycle(date) {
   // Если дата позже или равна lastPeriodDate, считаем как обычно
   const diffTime = date - appState.lastPeriodDate;
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  console.log("diffDays в getDayOfCycle:", diffDays);
 
   return (diffDays % appState.cycleLength) + 1;
 }
@@ -1362,7 +1360,7 @@ function handleConfirmNewCycleDate() {
     return;
   }
 
-  const newDate = new Date(newDateStr);
+  const newDate = new Date(newDateStr + 'T00:00:00');
   if (isNaN(newDate.getTime())) {
     alert("Неверный формат даты.");
     return;
