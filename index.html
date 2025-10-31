@@ -136,7 +136,12 @@
                 <!-- Calendar Tab -->
                 <div id="calendar-tab" class="tab-pane">
                     <div class="calendar-header">
-                        <h2>Ваш календарь циклов</h2>
+                        <!-- 🆕 Навигация по месяцам -->
+                        <div class="calendar-nav" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <button id="prev-month" class="nav-btn" style="background: none; border: none; color: #6b5b73; font-size: 1.5rem; cursor: pointer; padding: 0.5rem; border-radius: 50%;">←</button>
+                            <h2 id="calendar-month-year" style="margin: 0; color: #6b5b73; font-weight: normal;">Ваш календарь циклов</h2>
+                            <button id="next-month" class="nav-btn" style="background: none; border: none; color: #6b5b73; font-size: 1.5rem; cursor: pointer; padding: 0.5rem; border-radius: 50%;">→</button>
+                        </div>
                         <div class="legend">
                             <div class="legend-item">
                                 <div class="legend-color menstruation"></div>
