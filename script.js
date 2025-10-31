@@ -545,6 +545,7 @@ function getPhaseForDay(day) {
 
 // 🆕 Исправленная функция: возвращает null для дней до начала цикла
 function getDayOfCycle(date) {
+  console.log('Параметр date в getDayOfCycle:', date);
   if (!appState.lastPeriodDate) return 1
 
   // Если дата раньше даты начала последнего цикла
@@ -583,6 +584,8 @@ function getDayOfCycle(date) {
 function updateTodayView() {
   const currentDay = getCurrentCycleDay()
   const currentPhase = getPhaseForDay(currentDay)
+  console.log('currentDay в updateTodayView:', currentDay);
+  console.log('currentPhase в updateTodayView:', currentPhase);
 
   // Update greeting based on time
   const hour = new Date().getHours()
@@ -892,6 +895,11 @@ function openDayModal(date, cycleDay, phase) {
     month: "long",
     day: "numeric",
   });
+
+  console.log('dateStr в openDayModal', dateStr);
+  console.log('cycleDay в openDayModal', cycleDay);
+  console.log('date в openDayModal', date);
+  console.log('phase в openDayModal', phase);
 
   document.getElementById("modal-date").textContent = `${dateStr} - День ${cycleDay}`;
   document.getElementById("modal-phase").className = `modal-phase ${phase.name.toLowerCase()}`;
