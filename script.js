@@ -717,7 +717,7 @@ function updateTodayView() {
     const floatBtn = document.createElement("button");
     floatBtn.id = "float-new-cycle-btn";
     floatBtn.title = "Новый цикл?";
-    floatBtn.innerHTML = "🌙"; // Можно заменить на SVG-иконку
+    floatBtn.innerHTML = "🩸"; // Можно заменить на SVG-иконку
     floatBtn.style.position = "fixed";
     floatBtn.style.bottom = "100px"; // Выше кнопок навигации
     floatBtn.style.right = "20px";
@@ -755,7 +755,7 @@ function updateTodayView() {
   }
   
   // 🆕 Добавляем прогноз следующего цикла (если он есть)
-  const existingPrediction = document.querySelector('.prediction-section');
+  /*const existingPrediction = document.querySelector('.prediction-section');
   if (!existingPrediction && appState.nextPredictedCycle) {
     const predictedDate = new Date(appState.nextPredictedCycle.predictedStartDate);
     const formattedDate = predictedDate.toLocaleDateString("ru-RU", {
@@ -773,7 +773,7 @@ function updateTodayView() {
     if (recCard && recCard.parentNode) {
       recCard.insertAdjacentHTML('afterend', predictionHTML);
     }
-  }
+  }*/
 }
 
 // Mood Management
