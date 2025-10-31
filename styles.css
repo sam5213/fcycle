@@ -968,3 +968,38 @@ body {
     flex-direction: column;
   }
 }
+
+/* Calendar Navigation */
+.calendar-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  color: #6b5b73;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.nav-btn:hover {
+  background: #f0e8f0;
+  transform: scale(1.1);
+}
+
+.nav-btn:active {
+  transform: scale(0.95);
+}
+
+#calendar-month-year {
+  text-align: center;
+  color: #6b5b73;
+  margin-bottom: 0.5rem;
+  font-weight: normal;
+}
