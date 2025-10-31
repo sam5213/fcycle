@@ -917,11 +917,19 @@ function generateCalendar(monthOffset = 0) {
 
     // 🆕 Добавляем click handler ТОЛЬКО для дней >= lastPeriodDate (т.е. cycleDay !== null и дата подходит)
     if (cycleDay !== null && dayDate >= appState.lastPeriodDate) {
-      dayElement.addEventListener("click", () => openDayModal(dayDate, cycleDay, phase));
-    } else if (appState.nextPredictedCycle && dayDate >= new Date(appState.nextPredictedCycle.predictedStartDate)) {
-      // День прогнозируемого цикла — приглушённый
-      dayElement.style.cursor = "default";
-      dayElement.style.opacity = "0.4"; // Ещё более приглушён, чем прошлые
+      // 🆕 Проверяем, является ли день прогнозируемым (после окончания текущего цикла)
+      const isPredictedDay = appState.nextPredictedCycle &&
+                             dayDate >= new Date(appState.nextPredictedCycle.predictedStartDate);
+    
+      if (isPredictedDay) {
+        // Прогнозируемые дни — тусклые
+        dayElement.style.opacity = "0.4";
+        dayElement.style.cursor = "default"; // Не "pointer"
+      } else {
+        // Дни текущего цикла — яркие
+        dayElement.style.opacity = "1";
+        dayElement.addEventListener("click", () => openDayModal(dayDate, cycleDay, phase));
+      }
     } else {
       // Опционально: визуальный признак, что день "недоступен для редактирования"
       dayElement.style.cursor = "default"; // Не "pointer"
