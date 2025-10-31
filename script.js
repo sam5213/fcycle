@@ -341,6 +341,10 @@ function setupApp() {
   appState.cycleLength = Number.parseInt(cycleLengthSelect.value);
   appState.isSetup = true;
 
+  console.log("Установка даты начала цикла:", initialDate.toISOString());
+  console.log("💾 Установленная дата начала цикла:", appState.lastPeriodDate.toISOString());
+  console.log("📏 Установленная длина цикла:", appState.cycleLength);
+
   // 🆕 Инициализируем первый цикл
   appState.currentCycle = {
     startDate: initialDate.toISOString(),
@@ -545,7 +549,7 @@ function getPhaseForDay(day) {
 
 // 🆕 Исправленная функция: возвращает null для дней до начала цикла
 function getDayOfCycle(date) {
-  console.log('Параметр date в getDayOfCycle:', date);
+  console.log("appState.lastPeriodDate в getDayOfCycle:", appState.lastPeriodDate);
   if (!appState.lastPeriodDate) return 1
 
   // Если дата раньше даты начала последнего цикла
@@ -576,6 +580,7 @@ function getDayOfCycle(date) {
   // Если дата позже или равна lastPeriodDate, считаем как обычно
   const diffTime = date - appState.lastPeriodDate;
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  console.log("diffDays в getDayOfCycle:", diffDays);
 
   return (diffDays % appState.cycleLength) + 1;
 }
