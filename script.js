@@ -1043,14 +1043,14 @@ function updateDiaryView() {
 
     if (entry.type === "mood") {
       entryElement.innerHTML = `
-                <div class="diary-entry-date">${dateStr} - Day ${entry.data.cycleDay}</div>
-                <div class="diary-entry-mood">${moodEmojis[entry.data.mood]}</div>
-                ${entry.data.note ? `<div class="diary-entry-note">${entry.data.note}</div>` : ""}
+                <div class="diary-entry-date">${dateStr} - Day ${entry.payload.cycleDay}</div>
+                <div class="diary-entry-mood">${moodEmojis[entry.payload.mood]}</div>
+                ${entry.payload.note ? `<div class="diary-entry-note">${entry.payload.note}</div>` : ""}
             `;
     } else {
       entryElement.innerHTML = `
                 <div class="diary-entry-date">${dateStr}</div>
-                <div class="diary-entry-note">${entry.data.note}</div>
+                <div class="diary-entry-note">${entry.payload.note}</div>
             `;
     }
 
