@@ -785,6 +785,8 @@ function updateTodayView() {
       recCard.insertAdjacentHTML('afterend', predictionHTML);
     }
   }*/
+
+  drawActivityChart();
 }
 
 // Mood Management
