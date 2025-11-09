@@ -1202,6 +1202,7 @@ function saveAppState() {
     JSON.stringify({
       ...appState,
       lastPeriodDate: appState.lastPeriodDate ? appState.lastPeriodDate.toISOString() : null,
+      firstTrackingDate: appState.firstTrackingDate ? appState.firstTrackingDate.toISOString() : null,
       // completedCycles, currentCycle, nextPredictedCycle сохранятся автоматически
     }),
   );
@@ -1215,8 +1216,9 @@ function loadAppState() {
       ...appState,
       ...parsed,
       lastPeriodDate: parsed.lastPeriodDate ? new Date(parsed.lastPeriodDate) : null,
+      firstTrackingDate: parsed.firstTrackingDate ? new Date(parsed.firstTrackingDate) : null,
       // completedCycles, currentCycle, nextPredictedCycle: parsed.XXX || []
-      // 🆕 Сбрасываем смещение при загрузке
+      // Сбрасываем смещение при загрузке
       viewedMonthOffset: 0,
     };
   }
