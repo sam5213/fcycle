@@ -4,6 +4,7 @@ let appState = {
   lastPeriodDate: null,
   previousLastPeriodDate: null, // Для хранения предыдущей даты
   viewedMonthOffset: 0, // 🆕 Смещение месяца для отображения в календаре (0 — текущий)
+  firstTrackingDate: null, // 🆕 Дата, когда пользователь впервые начал отслеживание
   // --- История и прогноз циклов ---
   completedCycles: [],       // 🆕 Массив завершенных циклов [{ startDate: ISOString, endDate: ISOString, length: Number }, ...]
   currentCycle: null,        // 🆕 Объект текущего цикла { startDate: ISOString, predictedEndDate: ISOString, predictedLength: Number }
@@ -355,6 +356,11 @@ function setupApp() {
   console.log("💾 Установленная дата начала цикла:", appState.lastPeriodDate.toISOString());
   console.log("📏 Установленная длина цикла:", appState.cycleLength);
 
+  // Устанавливаем дату начала отслеживания
+  if (!appState.firstTrackingDate) {
+    appState.firstTrackingDate = initialDate;
+  }
+
   // 🆕 Инициализируем первый цикл
   appState.currentCycle = {
     startDate: initialDate.toISOString(),
@@ -560,6 +566,11 @@ function getPhaseForDay(day) {
 // 🆕 Исправленная функция: возвращает null для дней до начала цикла
 function getDayOfCycle(date) {
   if (!appState.lastPeriodDate) return 1
+
+  // Проверяем, до начала отслеживания ли день
+  if (appState.firstTrackingDate && date < appState.firstTrackingDate) {
+    return null; 
+  }
 
   // Если дата раньше даты начала последнего цикла
   if (date < appState.lastPeriodDate) {
@@ -896,44 +907,49 @@ function generateCalendar(monthOffset = 0) {
     if (cycleDay === null) {
       // День до начала цикла
       phase = {
-        name: "pre-cycle",
+        name: "pre-tracking",
         color: "#cccccc", // Серый цвет
-        recommendations: ["День до начала отсчета цикла."],
+        recommendations: ["День до начала отсчета отслеживания."],
         activities: [],
         icon: `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" fill="#cccccc"/></svg>`
       };
+      // Устанавливаем серый цвет и не добавляем клик
+      dayElement.style.backgroundColor = phase.color;
+      dayElement.style.color = "white";
+      dayElement.style.cursor = "default";
+      dayElement.style.opacity = "0.8";
     } else {
+      // День после начала отслеживания
       phase = getPhaseForDay(cycleDay);
-    }
 
-    // Apply phase color
-    dayElement.style.backgroundColor = phase.color;
-    dayElement.style.color = "white";
-
-    // Mark current day
-    if (day === today.getDate() && monthOffset === 0) {
-      dayElement.classList.add("current");
-    }
-
-    // 🆕 Добавляем click handler ТОЛЬКО для дней >= lastPeriodDate (т.е. cycleDay !== null и дата подходит)
-    if (cycleDay !== null && dayDate >= appState.lastPeriodDate) {
+      // Apply phase color
+      dayElement.style.backgroundColor = phase.color;
+      dayElement.style.color = "white";
+  
       // 🆕 Проверяем, является ли день прогнозируемым (после окончания текущего цикла)
       const isPredictedDay = appState.nextPredictedCycle &&
-                             dayDate >= new Date(appState.nextPredictedCycle.predictedStartDate);
-    
+                               dayDate >= new Date(appState.nextPredictedCycle.predictedStartDate);
+  
+      // 🆕 Проверяем, является ли день "прошлым" (до lastPeriodDate)
+      const isPastTrackedDay = dayDate < appState.lastPeriodDate;
+
       if (isPredictedDay) {
-        // Прогнозируемые дни — тусклые
+        // Прогнозируемые дни — тусклые и некликабельные
         dayElement.style.opacity = "0.4";
-        dayElement.style.cursor = "default"; // Не "pointer"
+        dayElement.style.cursor = "default";
+      } else if (isPastTrackedDay) {
+        // Прошедшие дни (до lastPeriodDate) — тусклые и некликабельные
+        dayElement.style.opacity = "0.6";
+        dayElement.style.cursor = "default";
       } else {
-        // Дни текущего цикла — яркие
+        // Дни текущего цикла — яркие и кликабельные
         dayElement.style.opacity = "1";
         dayElement.addEventListener("click", () => openDayModal(dayDate, cycleDay, phase));
       }
-    } else {
-      // Опционально: визуальный признак, что день "недоступен для редактирования"
-      dayElement.style.cursor = "default"; // Не "pointer"
-      dayElement.style.opacity = "0.6";
+    }
+    // Mark current day
+    if (day === today.getDate() && monthOffset === 0) {
+      dayElement.classList.add("current");
     }
 
     calendarGrid.appendChild(dayElement);
