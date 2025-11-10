@@ -24,7 +24,7 @@ function drawActivityChart() {
     return;
   }
 
-  console.log("канвас найден, начинаю отрисовку...");
+  console.log("Canvas найден, начинаю отрисовку...");
 
   // Удаляем старый график, если он есть
   if (window.activityChartInstance) {
@@ -32,10 +32,23 @@ function drawActivityChart() {
     window.activityChartInstance.destroy();
   }
 
+  // 🔥 Проверим, загружены ли phases и appState.lastPeriodDate
+  if (!phases || Object.keys(phases).length === 0) {
+    console.error("❌ Фазы не загружены!");
+    return;
+  }
+
+  if (!appState.lastPeriodDate) {
+    console.error("❌ Дата начала цикла не установлена!");
+    return;
+  }
+
   const today = new Date();
   const currentMonth = today.getMonth();
   const currentYear = today.getFullYear();
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+  console.log(`📅 Рассчитываем активность для ${daysInMonth} дней месяца ${currentMonth + 1}/${currentYear}`);
 
   // Рассчитываем уровень активности для каждого дня месяца
   const activityLevels = [];
@@ -44,7 +57,10 @@ function drawActivityChart() {
 
   for (let day = 1; day <= daysInMonth; day++) {
     const dayDate = new Date(currentYear, currentMonth, day);
+    console.log(`📅 Обрабатываю день ${day}, дата: ${dayDate.toISOString().split('T')[0]}`);
+    
     const cycleDay = getDayOfCycle(dayDate); // Используем функцию из script.js
+    console.log(`   -> cycleDay: ${cycleDay}`);
 
     let level = 1;
     let color = "#cccccc"; // Серый по умолчанию
@@ -53,18 +69,32 @@ function drawActivityChart() {
       // День до начала отслеживания
       level = 1;
       color = "#cccccc";
+      console.log(`   -> До начала цикла, уровень: ${level}, цвет: ${color}`);
     } else {
       const phase = getPhaseForDay(cycleDay); // Используем функцию из script.js
+      console.log(`   -> phase:`, phase);
+      if (!phase) {
+        console.error(`❌ Фаза для дня ${cycleDay} не найдена!`);
+        continue; // Пропускаем день
+      }
       level = getActivityLevelForPhase(phase.name);
       color = phase.color;
+
+      console.log(`   -> Фаза: ${phase.name}, уровень: ${level}, цвет: ${color}`);
 
       // 🆕 Добавляем прозрачность для прогнозируемых дней
       const isPredictedDay = appState.nextPredictedCycle &&
                              dayDate >= new Date(appState.nextPredictedCycle.predictedStartDate);
       if (isPredictedDay) {
         // Превращаем цвет в rgba с прозрачностью
-        const rgb = color.replace('#', '').match(/.{2}/g).map(hex => parseInt(hex, 16));
-        color = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.4)`;
+        //const rgb = color.replace('#', '').match(/.{2}/g).map(hex => parseInt(hex, 16));
+        //color = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.4)`;
+        const hex = color.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        color = `rgba(${r}, ${g}, ${b}, 0.4)`;
+        console.log(`   -> Прогнозируемый день, цвет изменён на: ${color}`);
       }
     }
 
@@ -72,6 +102,9 @@ function drawActivityChart() {
     backgroundColors.push(color);
     borderColors.push("#8B7B8B");
   }
+
+  console.log("📊 Уровни активности:", activityLevels);
+  console.log("🎨 Цвета фона:", backgroundColors);
 
   // Создаем новый график
   window.activityChartInstance = new Chart(canvas, {
@@ -127,6 +160,8 @@ function drawActivityChart() {
       }
     }
   });
+
+  console.log("✅ График успешно отрисован");
 }
 
 // Экспортируем функции, чтобы их можно было вызвать из script.js
