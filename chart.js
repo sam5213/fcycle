@@ -17,14 +17,18 @@ function getActivityLevelForPhase(phaseName) {
 
 // 🆕 Функция отрисовки графика активности с Chart.js
 function drawActivityChart() {
+  console.log("🎨 drawActivityChart вызвана");
   const canvas = document.getElementById("activity-chart-canvas");
   if (!canvas) {
     console.warn("❌ Canvas для графика активности не найден.");
     return;
   }
 
+  console.log("канвас найден, начинаю отрисовку...");
+
   // Удаляем старый график, если он есть
   if (window.activityChartInstance) {
+    console.log("🗑️ Удаляем старый график");
     window.activityChartInstance.destroy();
   }
 
