@@ -131,7 +131,7 @@ function drawActivityChart() {
   window.activityChartInstance = new Chart(canvas, {
     type: 'bar',
     data: {
-      labels: Array.from({ length: daysInMonth }, (_, i) => (i + 1).toString()), // ['1', '2', ..., '30']
+      labels: Array.from({ length: daysInMonth }, (_, i) => (i + 1).toString()),
       datasets: [{
         label: 'Уровень активности',
          activityLevels,
@@ -147,9 +147,9 @@ function drawActivityChart() {
       maintainAspectRatio: false,
       scales: {
         y: {
-          beginAtZero: false,
-          min: 1,
-          max: 5,
+          beginAtZero: true, // 🔥 Обязательно добавьте эту строку
+          min: 0, // Минимум = 0
+          max: 5, // Максимум = 5
           ticks: {
             stepSize: 1,
             color: "#8B7B8B",
