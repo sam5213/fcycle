@@ -786,7 +786,13 @@ function updateTodayView() {
     }
   }*/
 
-  drawActivityChart();
+  // 🆕 Вызываем отрисовку графика
+  console.log("🔍 Вызов drawActivityChart из updateTodayView..."); // 🔥 ДОБАВЬТЕ ЭТУ СТРОКУ
+  if (typeof drawActivityChart === 'function') {
+    drawActivityChart();
+  } else {
+    console.error("❌ drawActivityChart не является функцией!");
+  }
 }
 
 // Mood Management
