@@ -5,14 +5,35 @@
 
 // 🆕 Функция получения уровня активности для фазы
 function getActivityLevelForPhase(phaseName) {
-  const activityMap = {
-    "Менструация": 1, // Низкий
-    "Фолликулярная фаза": 3,   // Средний
-    "Овуляция": 5,    // Высокий
-    "Лютеиновая фаза": 2,       // Низкий/средний
-    // "pre-cycle": 1, // Серый
+  // 🔥 Карта соответствия русских имён фаз английским ключам
+  const phaseKeyMap = {
+    "Менструация": "menstruation",
+    "Фолликулярная фаза": "follicular",
+    "Овуляция": "ovulation",
+    "Лютеиновая фаза": "luteal",
   };
-  return activityMap[phaseName] || 1; // По умолчанию низкий
+
+  // 🔥 Карта уровней активности
+  const activityMap = {
+    "menstruation": 1, // Низкий
+    "follicular": 3,   // Средний
+    "ovulation": 5,    // Высокий
+    "luteal": 2,       // Низкий/средний
+  };
+
+  const phaseKey = phaseKeyMap[phaseName];
+  if (phaseKey === undefined) {
+    console.warn(`⚠️ Неизвестная фаза "${phaseName}". Возвращаем уровень 1.`);
+    return 1;
+  }
+
+  const level = activityMap[phaseKey];
+  if (level === undefined) {
+    console.warn(`⚠️ Уровень активности для фазы "${phaseName}" не найден. Возвращаем 1.`);
+    return 1;
+  }
+
+  return level;
 }
 
 // 🆕 Функция отрисовки графика активности с Chart.js
