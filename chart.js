@@ -6,10 +6,10 @@
 // 🆕 Функция получения уровня активности для фазы
 function getActivityLevelForPhase(phaseName) {
   const activityMap = {
-    "menstruation": 1, // Низкий
-    "follicular": 3,   // Средний
-    "ovulation": 5,    // Высокий
-    "luteal": 2,       // Низкий/средний
+    "Менструация": 1, // Низкий
+    "Фолликулярная фаза": 3,   // Средний
+    "Овуляция": 5,    // Высокий
+    "Лютеиновая фаза": 2,       // Низкий/средний
     // "pre-cycle": 1, // Серый
   };
   return activityMap[phaseName] || 1; // По умолчанию низкий
