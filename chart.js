@@ -134,7 +134,7 @@ function drawActivityChart() {
       labels: Array.from({ length: daysInMonth }, (_, i) => (i + 1).toString()),
       datasets: [{
         label: 'Уровень активности',
-         activityLevels,
+        data: activityLevels,
         backgroundColor: backgroundColors,
         borderColor: borderColors,
         borderWidth: 1,
