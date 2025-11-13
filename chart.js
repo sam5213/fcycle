@@ -75,6 +75,7 @@ function drawActivityChart() {
   const activityLevels = [];
   const backgroundColors = [];
   const borderColors = [];
+  const borderWidths = [];
 
   for (let day = 1; day <= daysInMonth; day++) {
     const dayDate = new Date(currentYear, currentMonth, day);
@@ -103,13 +104,11 @@ function drawActivityChart() {
 
       console.log(`   -> Фаза: ${phase.name}, уровень: ${level}, цвет: ${color}`);
 
-      // 🆕 Добавляем прозрачность для прогнозируемых дней
+      // Добавляем прозрачность для прогнозируемых дней
       const isPredictedDay = appState.nextPredictedCycle &&
                              dayDate >= new Date(appState.nextPredictedCycle.predictedStartDate);
       if (isPredictedDay) {
         // Превращаем цвет в rgba с прозрачностью
-        //const rgb = color.replace('#', '').match(/.{2}/g).map(hex => parseInt(hex, 16));
-        //color = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.4)`;
         const hex = color.replace('#', '');
         const r = parseInt(hex.substr(0, 2), 16);
         const g = parseInt(hex.substr(2, 2), 16);
@@ -119,9 +118,18 @@ function drawActivityChart() {
       }
     }
 
+    // Выделяем текущий день
+    if (day === today.getDate()) {
+      borderColor = "#FFD700"; // Золотой цвет рамки
+      borderWidth = 2; // Толщина рамки
+      // Опционально: можно изменить цвет фона
+      // color = shadeColor(color, -20); // Затемнить или осветлить (см. ниже)
+    }
+
     activityLevels.push(level);
     backgroundColors.push(color);
     borderColors.push("#8B7B8B");
+    borderWidths.push(borderWidth); // Добавляем ширину границы
   }
 
   console.log("📊 Уровни активности:", activityLevels);
@@ -136,8 +144,9 @@ function drawActivityChart() {
         label: 'Уровень активности',
         data: activityLevels,
         backgroundColor: backgroundColors,
-        borderColor: borderColors,
-        borderWidth: 1,
+        borderColor: borderColors, // Используем массив цветов границ
+        borderWidth: borderWidths, // Используем массив ширин границ
+        // borderWidth: 1,
         borderRadius: 4,
         borderSkipped: false,
       }]
