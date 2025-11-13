@@ -3,7 +3,7 @@
 // Импортируем Chart.js
 // <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-// 🆕 Функция получения уровня активности для фазы
+// Функция получения уровня активности для фазы
 function getActivityLevelForPhase(phaseName) {
   // 🔥 Карта соответствия русских имён фаз английским ключам
   const phaseKeyMap = {
@@ -36,7 +36,7 @@ function getActivityLevelForPhase(phaseName) {
   return level;
 }
 
-// 🆕 Функция отрисовки графика активности с Chart.js
+// Функция отрисовки графика активности с Chart.js
 function drawActivityChart() {
   console.log("🎨 drawActivityChart вызвана");
   const canvas = document.getElementById("activity-chart-canvas");
@@ -129,7 +129,7 @@ function drawActivityChart() {
     activityLevels.push(level);
     backgroundColors.push(color);
     borderColors.push("#8B7B8B");
-    borderWidths.push(borderWidth); // Добавляем ширину границы
+    borderWidths.push(borderWidths); // Добавляем ширину границы
   }
 
   console.log("📊 Уровни активности:", activityLevels);
